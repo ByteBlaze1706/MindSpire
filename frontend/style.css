@@ -1,0 +1,82 @@
+/* frontend/style.css */
+/* Custom Light Calming Wellness Theme variables */
+:root {
+  --primary-color: #8EADC2;    /* Soft Blue */
+  --accent-color: #F5AF8F;     /* Sage Peach */
+  --bg-cream: #FDFBF7;         /* Warm Cream */
+  --bg-sage: #F5EBE6;          /* Sage Tint */
+  --bg-lavender: #EBDDF7;      /* Soft Lavender */
+  --bg-teal: #E3EFF3;          /* Soft Teal */
+
+  --text-dark: #373A3C;        /* Charcoal text */
+  --text-muted: #8A8E91;
+  --white: #FFFFFF;
+}
+
+body {
+  font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+  background-color: var(--bg-cream);
+  color: var(--text-dark);
+  min-height: 100vh;
+}
+
+.wellness-card {
+  background-color: var(--white);
+  border: 1px solid rgba(142, 173, 194, 0.15);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 8px 20px -6px rgba(55, 58, 60, 0.05);
+  transition: all 0.25s ease;
+}
+
+.wellness-card:hover {
+  box-shadow: 0 12px 28px -4px rgba(55, 58, 60, 0.08);
+}
+
+.btn-primary-wellness {
+  background-color: var(--primary-color);
+  color: var(--white);
+  border: none;
+  font-weight: 600;
+  border-radius: 16px;
+  padding: 12px 24px;
+  transition: opacity 0.15s ease;
+}
+
+.btn-primary-wellness:hover {
+  opacity: 0.9;
+  color: var(--white);
+}
+
+.badge-wellness {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 8px;
+  padding: 4px 10px;
+}
+
+/* Glassmorphism Lock overlays */
+.consent-lock-overlay {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 24px;
+  padding: 32px;
+  text-align: center;
+  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+/* Typography styles */
+h1, h2, h3, h4, h5 {
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+/* custom sidebar styles */
+.counselor-sidebar {
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border-right: 1px solid rgba(142, 173, 194, 0.15);
+}

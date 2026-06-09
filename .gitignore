@@ -1,0 +1,13 @@
+.env
+backend/target/
+backend/.project
+backend/.classpath
+backend/.settings/
+backend/bin/
+backend/*.class
+*.class
+*.log
+.system_generated/
+backups/
+maven/
+maven.zip

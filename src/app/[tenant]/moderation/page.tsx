@@ -1,0 +1,59 @@
+// src/app/[tenant]/moderation/page.tsx
+import React from 'react';
+import { redirect } from 'next/navigation';
+import { createClient } from '../../../lib/supabase/server';
+import { UserRepository } from '../../../lib/repositories/user.repository';
+import { CommunityRepository } from '../../../lib/repositories/community.repository';
+import { ModerationContainer } from './moderation-container'; // Client container
+
+const userRepo = new UserRepository();
+const communityRepo = new CommunityRepository();
+
+export default async function ModerationPortalPage({
+  params,
+}: {
+  params: Promise<{ tenant: string }>;
+}) {
+  const resolvedParams = await params;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(`/${resolvedParams.tenant}/login`);
+  }
+
+  const profile = await userRepo.getById(user.id);
+  if (!profile || !['moderator', 'inst_admin', 'super_admin'].includes(profile.role)) {
+    redirect(`/${resolvedParams.tenant}/dashboard`); // Non-staff redirected to student dashboard
+  }
+
+  // Fetch pending reports and appeals
+  let reports = [];
+  let appeals = [];
+  let fetchError = false;
+
+  try {
+    reports = await communityRepo.getModerationQueue(profile.institution_id);
+    appeals = await communityRepo.getAppeals(profile.institution_id);
+  } catch (err) {
+    fetchError = true;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-semibold text-neutral-800 tracking-tight">Safety & Moderation Center</h1>
+        <p className="text-sm text-neutral-500 leading-relaxed max-w-xl">
+          Review community reports, issue restrictions, resolve student appeals, and enforce campus wellness guidelines.
+        </p>
+      </div>
+
+      <ModerationContainer
+        reports={reports}
+        appeals={appeals}
+        tenantSubdomain={resolvedParams.tenant}
+        hasError={fetchError}
+      />
+    </div>
+  );
+}

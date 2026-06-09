@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verification Status - MindSpire</title>
+  <!-- Google Fonts Outfit & Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .status-card {
+      max-width: 480px;
+      margin: 10vh auto;
+    }
+    .pulse-glow {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.98); opacity: 0.95; }
+      50% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(0.98); opacity: 0.95; }
+    }
+  </style>
+</head>
+<body class="d-flex align-items-center justify-content-center min-vh-100 bg-cream">
+
+  <div class="container">
+    <div class="card wellness-card status-card shadow-lg p-5 border-light-subtle text-center">
+      
+      <!-- Loading State -->
+      <div id="status-loading">
+        <div class="spinner-border text-primary mb-4" role="status" style="color: var(--primary-color) !important;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <h2 class="fs-4 text-dark font-semibold">Checking Verification Status</h2>
+        <p class="text-muted text-sm mt-2">Connecting to MindSpire secure repository...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="status-error" class="d-none">
+        <span class="fs-1 d-block mb-3">⚠️</span>
+        <h2 class="fs-4 text-danger font-semibold">Connection Error</h2>
+        <p class="text-muted text-sm mt-2">Could not retrieve your credential status. Please verify your connection or try again.</p>
+        <button onclick="checkStatus()" class="btn btn-primary-wellness mt-4 text-sm w-100">Retry Connection</button>
+      </div>
+
+      <!-- Pending State -->
+      <div id="status-pending" class="d-none">
+        <span class="fs-1 d-block mb-3 pulse-glow">⏳</span>
+        <span class="badge bg-warning-subtle text-warning-emphasis badge-wellness mb-3">Verification Pending</span>
+        <h2 class="fs-4 text-dark font-semibold">Profile Under Review</h2>
+        <p class="text-muted text-sm mt-3 leading-relaxed">
+          Your counselor registration is currently being verified by your institution's administrator. 
+          You will gain access to the clinical roster as soon as your credentials are approved.
+        </p>
+        <div class="bg-light rounded-4 p-3 my-4 text-start" style="font-size: 11px;">
+          <span class="text-muted d-block">Registered Account:</span>
+          <strong id="pending-email" class="text-dark">counselor@mindspire.edu</strong>
+          <span class="text-muted d-block mt-2">Required verification details:</span>
+          <span class="text-dark d-block">✓ Domain check</span>
+          <span class="text-dark d-block">✓ Clinical credentials validation</span>
+        </div>
+        <button onclick="checkStatus()" class="btn btn-primary-wellness text-sm w-100 mb-2">Check Status Again</button>
+      </div>
+
+      <!-- Rejected State -->
+      <div id="status-rejected" class="d-none">
+        <span class="fs-1 d-block mb-3">❌</span>
+        <span class="badge bg-danger-subtle text-danger badge-wellness mb-3">Verification Rejected</span>
+        <h2 class="fs-4 text-dark font-semibold">Application Declined</h2>
+        <p class="text-muted text-sm mt-3 leading-relaxed">
+          Your application for counselor privileges was rejected by the institution administrator. 
+          If you believe this was an error, please contact your university administrator.
+        </p>
+        <div class="bg-danger-subtle rounded-4 p-3 my-4 text-start border border-danger-subtle" style="font-size: 11px;">
+          <span class="text-danger-emphasis d-block fw-bold">Administrator Notes:</span>
+          <span class="text-muted">Clinical licensing information could not be verified in the registration portal.</span>
+        </div>
+        <a href="mailto:admin@mindspire.edu" class="btn btn-outline-dark text-sm w-100 rounded-3">Contact Administration</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:8080/api/counselor";
+
+    // Setup active profile context in dev mode if hostname is localhost
+    let profile = JSON.parse(sessionStorage.getItem("profile"));
+    if (!profile && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+      profile = {
+        id: "c0a80101-0000-0000-0000-000000000001",
+        email: "counselor@mindspire.edu",
+        role: "counselor",
+        institutionId: "c0a80101-9999-0000-0000-000000000001"
+      };
+      sessionStorage.setItem("profile", JSON.stringify(profile));
+    }
+
+    async function checkStatus() {
+      const loader = document.getElementById("status-loading");
+      const errorDiv = document.getElementById("status-error");
+      const pendingDiv = document.getElementById("status-pending");
+      const rejectedDiv = document.getElementById("status-rejected");
+
+      loader.classList.remove("d-none");
+      errorDiv.classList.add("d-none");
+      pendingDiv.classList.add("d-none");
+      rejectedDiv.classList.add("d-none");
+
+      try {
+        const res = await fetch(`${API_BASE}/status`, {
+          method: "GET",
+          credentials: "include"
+        });
+        if (!res.ok) throw new Error("Status API returned error");
+
+        const data = await res.json();
+        
+        loader.classList.add("d-none");
+        
+        if (data.status === 'approved' || data.isApproved) {
+          // If approved, update profile context and redirect to counselor roster
+          if (profile) {
+            profile.isApproved = true;
+            sessionStorage.setItem("profile", JSON.stringify(profile));
+          }
+          window.location.href = "counselor.html";
+        } else if (data.status === 'rejected') {
+          rejectedDiv.classList.remove("d-none");
+        } else {
+          // Pending status
+          document.getElementById("pending-email").innerText = data.email;
+          pendingDiv.classList.remove("d-none");
+        }
+      } catch (err) {
+        loader.classList.add("d-none");
+        errorDiv.classList.remove("d-none");
+      }
+    }
+
+    // Init check on load
+    window.onload = checkStatus;
+  </script>
+</body>
+</html>
