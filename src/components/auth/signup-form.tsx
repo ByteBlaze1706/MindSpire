@@ -60,14 +60,20 @@ export function SignupForm() {
   const handleFinish = async () => {
     setLoading(true);
     setErrorMsg(null);
-    const result = await signUpStudentAnonymously({
-      pseudonym: pseudonym.trim(),
-      tokenId: tokenId,
-      pin: pin,
-      tenantSubdomain: tenant.subdomain,
-    });
-    if (result && !result.success) {
-      setErrorMsg(result.error || 'Registration failed.');
+    try {
+      const result = await signUpStudentAnonymously({
+        pseudonym: pseudonym.trim(),
+        tokenId: tokenId,
+        pin: pin,
+        tenantSubdomain: tenant.subdomain,
+      });
+      if (result && !result.success) {
+        setErrorMsg(result.error || 'Registration failed.');
+        setLoading(false);
+      }
+    } catch (err: any) {
+      console.error('[SignupForm] Client-side exception during registration:', err);
+      setErrorMsg(err.message || 'An unexpected error occurred during registration. Please check server logs.');
       setLoading(false);
     }
   };

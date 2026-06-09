@@ -34,6 +34,10 @@ public class RunQuery {
                     ");");
             System.out.println("Successfully created anonymous_users table.");
 
+            System.out.println("Altering users table to drop NOT NULL on email column...");
+            stmt.execute("ALTER TABLE public.users ALTER COLUMN email DROP NOT NULL;");
+            System.out.println("Successfully altered users table.");
+
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -6,7 +6,7 @@ import { Role } from '../permissions/roles';
 export interface UserProfile {
   id: string;
   institution_id: string;
-  email: string;
+  email: string | null;
   role: Role;
   real_first_name: string | null;
   real_last_name: string | null;

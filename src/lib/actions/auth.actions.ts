@@ -17,21 +17,27 @@ export async function signUpStudentAnonymously(formData: {
   pin: string;
   tenantSubdomain: string;
 }) {
+  console.log('[signUpStudentAnonymously] Server Action START. Token:', formData.tokenId, 'Pseudonym:', formData.pseudonym);
   try {
+    console.log('[signUpStudentAnonymously] Step 1/3: Calling authService.signUpStudentAnonymous...');
     const user = await authService.signUpStudentAnonymous({
       pseudonym: formData.pseudonym,
       tokenId: formData.tokenId,
       pin: formData.pin,
       tenantSubdomain: formData.tenantSubdomain,
     });
+    console.log('[signUpStudentAnonymously] Step 1/3 succeeded. User:', user.id);
 
+    console.log('[signUpStudentAnonymously] Step 2/3: Signing custom JWT token...');
     const token = await signToken({
       userId: user.id,
       tokenId: formData.tokenId.toUpperCase(),
       institutionId: user.institution_id,
       role: 'student',
     });
+    console.log('[signUpStudentAnonymously] Step 2/3 succeeded. Token length:', token.length);
 
+    console.log('[signUpStudentAnonymously] Step 3/3: Setting session cookie...');
     const cookieStore = await cookies();
     cookieStore.set('mindspire-student-session', token, {
       httpOnly: true,
@@ -40,10 +46,13 @@ export async function signUpStudentAnonymously(formData: {
       maxAge: 60 * 60 * 24 * 30, // 30 days
       sameSite: 'strict',
     });
+    console.log('[signUpStudentAnonymously] Step 3/3 succeeded. Cookie set.');
   } catch (error: any) {
+    console.error('[signUpStudentAnonymously] Server Action EXCEPTION:', error.message, error.stack);
     return { success: false, error: error.message };
   }
 
+  console.log('[signUpStudentAnonymously] Server Action redirecting to /dashboard...');
   redirect('/dashboard');
 }
 

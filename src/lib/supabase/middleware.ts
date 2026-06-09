@@ -47,7 +47,7 @@ export async function updateSession(request: NextRequest) {
           data: {
             user: {
               id: decoded.userId,
-              email: `${decoded.tokenId.toLowerCase()}@mindspire.local`,
+              email: null,
               role: 'student',
               user_metadata: {
                 role: 'student',
