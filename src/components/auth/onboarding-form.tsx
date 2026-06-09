@@ -152,6 +152,16 @@ export function OnboardingForm({ counselors }: { counselors: CounselorOption[] }
         {/* STEP 1: Real Identity Details */}
         {step === 1 && (
           <div className="space-y-5">
+            <div className="p-4 bg-emerald-50/60 backdrop-blur-sm border border-emerald-100/50 rounded-2xl flex gap-3 text-left">
+              <span className="text-lg">🔐</span>
+              <div className="space-y-0.5">
+                <span className="block text-xs font-bold text-emerald-800">Privacy Guard Active</span>
+                <span className="block text-[11px] text-emerald-700 leading-normal">
+                  Your real name is securely encrypted end-to-end using AES-256 and stored separately in an isolated database. It will NEVER be visible to counselors, peer students, or administrators during normal operation.
+                </span>
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-medium uppercase tracking-wider text-neutral-500 mb-2">
                 Real First Name
@@ -216,22 +226,24 @@ export function OnboardingForm({ counselors }: { counselors: CounselorOption[] }
             <input type="hidden" {...register('pseudonym')} />
             <input type="hidden" {...register('tokenId')} />
             
-            <div className="p-6 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 border border-emerald-100/50 rounded-2xl text-center space-y-4 shadow-sm">
+            <div className="p-8 bg-gradient-to-br from-[#F5AF8F] via-[#E8D4C8] to-[#8EADC2] border border-white/40 rounded-[32px] text-center space-y-6 shadow-md relative overflow-hidden">
+              <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px] -z-1" />
+              
               <div>
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400">Your Anonymous Display Name</span>
-                <span className="block text-2xl font-bold text-emerald-800 tracking-tight mt-1">{watch('pseudonym') || 'Generating...'}</span>
+                <span className="block text-[10px] font-bold uppercase tracking-widest text-neutral-600">Your Anonymous Display Name</span>
+                <span className="block text-3xl font-extrabold text-neutral-800 tracking-tight mt-2">{watch('pseudonym') || 'Generating...'}</span>
               </div>
-              <div className="border-t border-emerald-100/50 pt-3">
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400">Your Secure Token ID</span>
-                <span className="block text-lg font-mono font-bold text-teal-800 mt-1">{watch('tokenId') || 'Generating...'}</span>
+              <div className="border-t border-white/40 pt-4">
+                <span className="block text-[10px] font-bold uppercase tracking-widest text-neutral-600">Your Secure Token ID</span>
+                <span className="block text-xl font-mono font-bold text-neutral-850 tracking-wider mt-1">{watch('tokenId') || 'Generating...'}</span>
               </div>
               
               <button
                 type="button"
                 onClick={generateAnonDetails}
-                className="mt-2 text-xs font-semibold text-emerald-700 hover:text-emerald-800 underline flex items-center gap-1.5 mx-auto cursor-pointer"
+                className="mt-4 px-4 py-2 bg-white/80 hover:bg-white text-xs font-bold text-neutral-800 rounded-full transition shadow-sm flex items-center gap-2 mx-auto cursor-pointer"
               >
-                🔄 Generate New Identity
+                <span>🔄</span> Regenerate Identity
               </button>
             </div>
             

@@ -51,7 +51,7 @@ export function CounselorDashboardContainer({
   const filteredRoster = roster.filter(
     (student) =>
       student.pseudonym.toLowerCase().includes(searchRoster.toLowerCase()) ||
-      student.email.toLowerCase().includes(searchRoster.toLowerCase())
+      ((student as any).token_id || '').toLowerCase().includes(searchRoster.toLowerCase())
   );
 
   if (hasError) {
