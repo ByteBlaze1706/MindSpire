@@ -23,18 +23,34 @@ export class TenantRepository {
    * Fetches tenant configuration by subdomain/slug path key.
    */
   async getBySubdomain(subdomain: string): Promise<Institution | null> {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('institutions')
-      .select('*')
-      .eq('subdomain', subdomain)
-      .single();
+    console.log('[TenantRepository.getBySubdomain START] subdomain:', subdomain);
+    console.log('[TenantRepository.getBySubdomain ENV] URL:', process.env.NEXT_PUBLIC_SUPABASE_URL, 'KEY PRESENT:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+    try {
+      const supabase = await createClient();
+      const { data, error } = await supabase
+        .from('institutions')
+        .select('*')
+        .eq('subdomain', subdomain)
+        .single();
 
-    if (error || !data) {
+      if (error) {
+        console.error('[TenantRepository.getBySubdomain DB ERROR]:', error);
+      }
+      if (!data) {
+        console.warn('[TenantRepository.getBySubdomain NO DATA]');
+      } else {
+        console.log('[TenantRepository.getBySubdomain SUCCESS] Found tenant:', data.name);
+      }
+
+      if (error || !data) {
+        return null;
+      }
+
+      return data as Institution;
+    } catch (e: any) {
+      console.error('[TenantRepository.getBySubdomain EXCEPTION]:', e.message, e.stack);
       return null;
     }
-
-    return data as Institution;
   }
 
   /**

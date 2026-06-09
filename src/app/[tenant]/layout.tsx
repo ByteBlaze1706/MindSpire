@@ -13,10 +13,15 @@ export default async function TenantLayout({
   children: React.ReactNode;
   params: Promise<{ tenant: string }>;
 }) {
+  console.log('[TenantLayout START] params:', params);
   const resolvedParams = await params;
+  console.log('[TenantLayout RESOLVED] resolvedParams:', resolvedParams);
+  
   const tenant = await tenantRepo.getBySubdomain(resolvedParams.tenant);
+  console.log('[TenantLayout TENANT RESOLVED] tenant:', tenant ? tenant.name : 'NULL');
 
   if (!tenant) {
+    console.warn('[TenantLayout NOT FOUND] Redirecting or showing notFound() for tenant:', resolvedParams.tenant);
     notFound();
   }
 
