@@ -11,7 +11,7 @@ import { useTenant } from '../providers/tenant-provider';
 
 const loginSchema = z.object({
   loginIdentifier: z.string().min(3, 'Please enter your Token ID or Email Address.'),
-  password: z.string().min(8, 'Password must be at least 8 characters long.'),
+  password: z.string().min(6, 'Password / PIN must be at least 6 characters long.'),
 });
 
 type LoginInput = z.infer<typeof loginSchema>;
@@ -44,10 +44,10 @@ export function LoginForm() {
         tenantSubdomain: tenant.subdomain,
       });
     } else {
-      // Student Token ID Login
+      // Student Token ID + PIN Login
       result = await signInWithToken({
         tokenId: data.loginIdentifier,
-        password_hash: data.password,
+        pin: data.password,
         tenantSubdomain: tenant.subdomain,
       });
     }
@@ -105,12 +105,12 @@ export function LoginForm() {
 
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">
-              Password
+              Password / 6-digit PIN
             </label>
             <input
               {...register('password')}
               type="password"
-              placeholder="••••••••"
+              placeholder="••••••"
               className="w-full px-4 py-3 bg-white/80 border border-neutral-200 focus:border-neutral-400 focus:bg-white rounded-2xl outline-none transition text-sm text-neutral-800"
             />
             {errors.password && (

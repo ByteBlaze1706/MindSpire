@@ -1,8 +1,15 @@
 // src/lib/services/auth.service.ts
 // Handles business logic for authentication and credentials verification.
+import crypto from 'crypto';
 import { createClient } from '../supabase/server';
 import { TenantRepository } from '../repositories/tenant.repository';
 import { UserRepository } from '../repositories/user.repository';
+import { hashPin, verifyPin } from '../auth/pin';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+
+const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const cleanUrl = rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+const adminSupabase = createSupabaseClient(cleanUrl, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
 export class AuthService {
   private tenantRepo = new TenantRepository();
@@ -73,7 +80,7 @@ export class AuthService {
   async signUpStudentAnonymous(payload: {
     pseudonym: string;
     tokenId: string;
-    password_hash: string;
+    pin: string;
     tenantSubdomain: string;
   }) {
     const tenant = await this.tenantRepo.getBySubdomain(payload.tenantSubdomain);
@@ -87,28 +94,39 @@ export class AuthService {
       throw new Error('Pseudonym already in use. Please select a different handle.');
     }
 
+    // Check if token_id is already taken
+    const { data: existingToken } = await adminSupabase
+      .from('anonymous_users')
+      .select('id')
+      .eq('token_id', payload.tokenId.toUpperCase())
+      .maybeSingle();
+      
+    if (existingToken) {
+      throw new Error('Token ID already registered.');
+    }
+
+    const userId = crypto.randomUUID();
+    const hashedPin = hashPin(payload.pin);
     const email = `${payload.tokenId.toUpperCase()}@mindspire.local`;
-    const supabase = await createClient();
 
-    // 1. Create Supabase Auth user record
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password: payload.password_hash,
-      options: {
-        data: {
-          institution_id: tenant.id,
-          role: 'student',
-        },
-      },
-    });
+    // 1. Insert into anonymous_users table
+    const { error: anonUserError } = await adminSupabase
+      .from('anonymous_users')
+      .insert({
+        id: userId,
+        token_id: payload.tokenId.toUpperCase(),
+        anonymous_name: payload.pseudonym,
+        hashed_pin: hashedPin,
+        institution_id: tenant.id
+      });
 
-    if (authError || !authData.user) {
-      throw new Error(`Authentication registration failed: ${authError?.message}`);
+    if (anonUserError) {
+      throw new Error(`Failed to create anonymous account: ${anonUserError.message}`);
     }
 
     // 2. Pre-create public user profile in users table
     await this.userRepo.createProfile({
-      id: authData.user.id,
+      id: userId,
       institution_id: tenant.id,
       email,
       role: 'student',
@@ -118,7 +136,7 @@ export class AuthService {
 
     // 3. Create anonymous profile in anonymous_profiles table
     await this.userRepo.createAnonymousProfile({
-      user_id: authData.user.id,
+      user_id: userId,
       institution_id: tenant.id,
       pseudonym: payload.pseudonym,
       avatar_config: { icon: 'otter', color: '#0F4C81' },
@@ -126,15 +144,60 @@ export class AuthService {
     });
 
     // 4. Create notification preferences
-    await this.userRepo.updateNotificationPreferences(authData.user.id, {
+    await this.userRepo.updateNotificationPreferences(userId, {
       email_enabled: false,
       push_enabled: true,
       in_app_enabled: true,
     });
 
-    return authData.user;
+    return {
+      id: userId,
+      email,
+      role: 'student',
+      institution_id: tenant.id
+    };
   }
 
+
+
+  /**
+   * Logs a student user in using Token ID and PIN.
+   */
+  async loginStudentWithToken(tokenId: string, pin: string, tenantSubdomain: string) {
+    const tenant = await this.tenantRepo.getBySubdomain(tenantSubdomain);
+    if (!tenant) {
+      throw new Error('Target institution not found.');
+    }
+
+    // Query anonymous_users table
+    const { data: anonUser, error: queryError } = await adminSupabase
+      .from('anonymous_users')
+      .select('*')
+      .eq('token_id', tokenId.toUpperCase())
+      .maybeSingle();
+
+    if (queryError || !anonUser) {
+      throw new Error('Invalid Token ID or PIN.');
+    }
+
+    // Verify PIN
+    const isValid = verifyPin(pin, anonUser.hashed_pin);
+    if (!isValid) {
+      throw new Error('Invalid Token ID or PIN.');
+    }
+
+    // Verify tenant match
+    if (anonUser.institution_id !== tenant.id) {
+      throw new Error('User account is not associated with this institution.');
+    }
+
+    return {
+      id: anonUser.id,
+      email: `${tokenId.toUpperCase()}@mindspire.local`,
+      role: 'student',
+      institution_id: tenant.id
+    };
+  }
 
   /**
    * Logs a user in using email and password.

@@ -23,6 +23,17 @@ public class RunQuery {
             stmt.execute("UPDATE public.anonymous_profiles SET token_id = 'NMIMS-' || upper(substring(md5(random()::text) from 1 for 6)) WHERE token_id IS NULL;");
             System.out.println("Successfully populated existing profiles with random tokens.");
 
+            System.out.println("Creating anonymous_users table...");
+            stmt.execute("CREATE TABLE IF NOT EXISTS public.anonymous_users (" +
+                    "id UUID PRIMARY KEY DEFAULT uuid_generate_v4()," +
+                    "token_id VARCHAR(100) UNIQUE NOT NULL," +
+                    "anonymous_name VARCHAR(100) NOT NULL," +
+                    "hashed_pin VARCHAR(255) NOT NULL," +
+                    "institution_id UUID NOT NULL REFERENCES public.institutions(id) ON DELETE CASCADE," +
+                    "created_at TIMESTAMPTZ NOT NULL DEFAULT now()" +
+                    ");");
+            System.out.println("Successfully created anonymous_users table.");
+
         } catch (Exception e) {
             e.printStackTrace();
         }

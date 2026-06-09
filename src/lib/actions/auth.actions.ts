@@ -2,7 +2,9 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { AuthService } from '../services/auth.service';
+import { signToken } from '../auth/token';
 
 const authService = new AuthService();
 
@@ -12,19 +14,32 @@ const authService = new AuthService();
 export async function signUpStudentAnonymously(formData: {
   pseudonym: string;
   tokenId: string;
-  password_hash: string;
+  pin: string;
   tenantSubdomain: string;
 }) {
   try {
-    await authService.signUpStudentAnonymous({
+    const user = await authService.signUpStudentAnonymous({
       pseudonym: formData.pseudonym,
       tokenId: formData.tokenId,
-      password_hash: formData.password_hash,
+      pin: formData.pin,
       tenantSubdomain: formData.tenantSubdomain,
     });
 
-    const email = `${formData.tokenId.trim().toUpperCase()}@mindspire.local`;
-    await authService.login(email, formData.password_hash, formData.tenantSubdomain);
+    const token = await signToken({
+      userId: user.id,
+      tokenId: formData.tokenId.toUpperCase(),
+      institutionId: user.institution_id,
+      role: 'student',
+    });
+
+    const cookieStore = await cookies();
+    cookieStore.set('mindspire-student-session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+      sameSite: 'strict',
+    });
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -33,16 +48,35 @@ export async function signUpStudentAnonymously(formData: {
 }
 
 /**
- * Server Action: Login a student using their Token ID and Password.
+ * Server Action: Login a student using their Token ID and PIN.
  */
 export async function signInWithToken(formData: {
   tokenId: string;
-  password_hash: string;
+  pin: string;
   tenantSubdomain: string;
 }) {
   try {
-    const email = `${formData.tokenId.trim().toUpperCase()}@mindspire.local`;
-    await authService.login(email, formData.password_hash, formData.tenantSubdomain);
+    const user = await authService.loginStudentWithToken(
+      formData.tokenId,
+      formData.pin,
+      formData.tenantSubdomain
+    );
+
+    const token = await signToken({
+      userId: user.id,
+      tokenId: formData.tokenId.toUpperCase(),
+      institutionId: user.institution_id,
+      role: 'student',
+    });
+
+    const cookieStore = await cookies();
+    cookieStore.set('mindspire-student-session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+      sameSite: 'strict',
+    });
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -76,6 +110,7 @@ export async function signOut() {
   } catch (error) {
     // Ignore error
   }
+  const cookieStore = await cookies();
+  cookieStore.delete('mindspire-student-session');
   redirect('/login');
 }
-

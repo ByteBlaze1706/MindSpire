@@ -13,7 +13,7 @@ export function SignupForm() {
   
   // Form values
   const [pseudonym, setPseudonym] = useState('');
-  const [password, setPassword] = useState('');
+  const [pin, setPin] = useState('');
   const [tokenId, setTokenId] = useState('');
 
   const adjectives = ['Quiet', 'Calm', 'Gentle', 'Warm', 'Serene', 'Peaceful', 'Soft', 'Silent', 'Restful', 'Mindful', 'Friendly', 'Joyful', 'Kind', 'Bright', 'Tranquil', 'Brave', 'Strong', 'Radiant'];
@@ -42,16 +42,18 @@ export function SignupForm() {
       setErrorMsg('Please choose or generate an alias.');
       return;
     }
-    if (password.length < 8) {
-      setErrorMsg('Password must be at least 8 characters.');
-      return;
-    }
     setErrorMsg(null);
     generateTokenId();
     setStep(2);
   };
 
-  const handleStep2Submit = () => {
+  const handleStep2Submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!/^\d{6}$/.test(pin)) {
+      setErrorMsg('PIN must be exactly 6 numeric digits.');
+      return;
+    }
+    setErrorMsg(null);
     setStep(3);
   };
 
@@ -61,7 +63,7 @@ export function SignupForm() {
     const result = await signUpStudentAnonymously({
       pseudonym: pseudonym.trim(),
       tokenId: tokenId,
-      password_hash: password,
+      pin: pin,
       tenantSubdomain: tenant.subdomain,
     });
     if (result && !result.success) {
@@ -122,23 +124,9 @@ export function SignupForm() {
                   🎲 Generate
                 </button>
               </div>
-              <p className="mt-2 text-[10px] text-neutral-400 leading-normal">
+              <p className="mt-2 text-[10px] text-neutral-450 leading-normal">
                 Examples: Calm Sparrow, Quiet River, Brave Willow. This is your safe peer handle.
               </p>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">
-                Choose Password / PIN
-              </label>
-              <input
-                type="password"
-                placeholder="Minimum 8 characters"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white/80 border border-neutral-200 focus:border-neutral-400 focus:bg-white rounded-2xl outline-none transition text-sm text-neutral-800"
-                required
-              />
             </div>
 
             <button
@@ -151,26 +139,39 @@ export function SignupForm() {
         )}
 
         {step === 2 && (
-          <div className="space-y-6">
-            <div className="p-6 bg-gradient-to-br from-[#E3EFF3] to-[#F5EBE6] border border-white/50 rounded-3xl text-center space-y-4">
-              <span className="text-2xl">🔑</span>
-              <div>
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-500">Your Automatically Generated Token ID</span>
-                <span className="block text-2xl font-mono font-bold text-neutral-800 tracking-wide mt-2">{tokenId}</span>
-              </div>
+          <form onSubmit={handleStep2Submit} className="space-y-6">
+            <div className="p-5 bg-gradient-to-br from-[#E3EFF3] to-[#F5EBE6] border border-white/50 rounded-3xl text-center space-y-2">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-500">Your Secure Token ID</span>
+              <span className="block text-2xl font-mono font-bold text-neutral-800 tracking-wide">{tokenId}</span>
             </div>
-            <p className="text-xs text-neutral-500 leading-relaxed text-center">
-              This unique Token ID was securely generated based on your institution's configuration. Please save this key.
-            </p>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">
+                Create a 6-digit PIN
+              </label>
+              <input
+                type="password"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                placeholder="••••••"
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                className="w-full text-center tracking-widest px-4 py-3 bg-white/80 border border-neutral-200 focus:border-neutral-400 focus:bg-white rounded-2xl outline-none transition text-lg font-bold text-neutral-800"
+                required
+              />
+              <p className="mt-2 text-[10px] text-neutral-450 text-center leading-normal">
+                Enter exactly 6 numeric digits. You will use this PIN to log in.
+              </p>
+            </div>
 
             <button
-              type="button"
-              onClick={handleStep2Submit}
-              className="w-full py-3.5 text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-800 rounded-2xl transition cursor-pointer"
+              type="submit"
+              className="w-full py-3.5 text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-850 rounded-2xl transition cursor-pointer"
             >
-              Verify & Confirm
+              Continue to Step 3
             </button>
-          </div>
+          </form>
         )}
 
         {step === 3 && (
@@ -195,7 +196,7 @@ export function SignupForm() {
             <div className="p-4 bg-amber-50/60 border border-amber-100 rounded-2xl text-left flex gap-2">
               <span className="text-sm">⚠️</span>
               <p className="text-[10px] text-amber-800 leading-normal">
-                <strong>Important:</strong> Counselors and administrators only see this anonymous identity. Real emails and names are never collected. You must store your Token ID to log back in.
+                <strong>Important:</strong> Counselors and administrators only see this anonymous identity. Real emails and names are never collected. You must store your Token ID and 6-digit PIN to log back in.
               </p>
             </div>
 
