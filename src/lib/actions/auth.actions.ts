@@ -7,24 +7,51 @@ import { AuthService } from '../services/auth.service';
 const authService = new AuthService();
 
 /**
- * Server Action: Register a new student user.
+ * Server Action: Register a new student user anonymously.
  */
-export async function signUpWithEmail(formData: {
-  email: string;
+export async function signUpStudentAnonymously(formData: {
+  pseudonym: string;
+  tokenId: string;
   password_hash: string;
   tenantSubdomain: string;
-  accessCode?: string;
 }) {
   try {
-    await authService.signUpStudent(formData);
-    return { success: true, message: 'Verification link sent to your email.' };
+    await authService.signUpStudentAnonymous({
+      pseudonym: formData.pseudonym,
+      tokenId: formData.tokenId,
+      password_hash: formData.password_hash,
+      tenantSubdomain: formData.tenantSubdomain,
+    });
+
+    const email = `${formData.tokenId.trim().toUpperCase()}@mindspire.local`;
+    await authService.login(email, formData.password_hash, formData.tenantSubdomain);
   } catch (error: any) {
     return { success: false, error: error.message };
   }
+
+  redirect('/dashboard');
 }
 
 /**
- * Server Action: Login a student or staff member.
+ * Server Action: Login a student using their Token ID and Password.
+ */
+export async function signInWithToken(formData: {
+  tokenId: string;
+  password_hash: string;
+  tenantSubdomain: string;
+}) {
+  try {
+    const email = `${formData.tokenId.trim().toUpperCase()}@mindspire.local`;
+    await authService.login(email, formData.password_hash, formData.tenantSubdomain);
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+
+  redirect('/dashboard');
+}
+
+/**
+ * Server Action: Login a counselor or admin using their Email and Password.
  */
 export async function signInWithEmail(formData: {
   email: string;
@@ -37,7 +64,6 @@ export async function signInWithEmail(formData: {
     return { success: false, error: error.message };
   }
 
-  // Redirect to target dashboard path upon successful auth
   redirect('/dashboard');
 }
 
@@ -52,3 +78,4 @@ export async function signOut() {
   }
   redirect('/login');
 }
+

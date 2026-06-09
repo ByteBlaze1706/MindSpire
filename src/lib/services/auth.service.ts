@@ -68,6 +68,75 @@ export class AuthService {
   }
 
   /**
+   * Registers a student user anonymously using a Token ID and pseudonym.
+   */
+  async signUpStudentAnonymous(payload: {
+    pseudonym: string;
+    tokenId: string;
+    password_hash: string;
+    tenantSubdomain: string;
+  }) {
+    const tenant = await this.tenantRepo.getBySubdomain(payload.tenantSubdomain);
+    if (!tenant) {
+      throw new Error('Target institution not found.');
+    }
+
+    // Check if pseudonym is already taken
+    const isPseudonymTaken = await this.userRepo.pseudonymExists(payload.pseudonym);
+    if (isPseudonymTaken) {
+      throw new Error('Pseudonym already in use. Please select a different handle.');
+    }
+
+    const email = `${payload.tokenId.toUpperCase()}@mindspire.local`;
+    const supabase = await createClient();
+
+    // 1. Create Supabase Auth user record
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password: payload.password_hash,
+      options: {
+        data: {
+          institution_id: tenant.id,
+          role: 'student',
+        },
+      },
+    });
+
+    if (authError || !authData.user) {
+      throw new Error(`Authentication registration failed: ${authError?.message}`);
+    }
+
+    // 2. Pre-create public user profile in users table
+    await this.userRepo.createProfile({
+      id: authData.user.id,
+      institution_id: tenant.id,
+      email,
+      role: 'student',
+      real_first_name: null,
+      real_last_name: null,
+    });
+
+    // 3. Create anonymous profile in anonymous_profiles table
+    await this.userRepo.createAnonymousProfile({
+      user_id: authData.user.id,
+      institution_id: tenant.id,
+      pseudonym: payload.pseudonym,
+      avatar_config: { icon: 'otter', color: '#0F4C81' },
+      token_id: payload.tokenId.toUpperCase(),
+    });
+
+    // 4. Create notification preferences
+    await this.userRepo.updateNotificationPreferences(authData.user.id, {
+      email_enabled: false,
+      push_enabled: true,
+      in_app_enabled: true,
+    });
+
+    return authData.user;
+  }
+
+
+  /**
    * Logs a user in using email and password.
    */
   async login(email: string, password_hash: string, tenantSubdomain: string) {
