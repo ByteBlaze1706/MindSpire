@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinical Dashboard - MindSpire</title>
+  <!-- Google Fonts Outfit & Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Dynamic Branding Injector -->
+  <script src="js/branding-injector.js"></script>
+</head>
+<body class="d-flex flex-column flex-md-row">
+
+  <!-- Desktop Sidebar -->
+  <aside class="counselor-sidebar w-100 w-md-25 p-4 d-flex flex-column justify-content-between h-md-100vh sticky-top">
+    <div>
+      <span class="text-uppercase text-muted tracking-wider text-xs font-semibold" style="font-size: 10px; letter-spacing: 1px;">
+        Clinical Portal
+      </span>
+      <div class="d-flex align-items-center gap-2 mt-1">
+        <span id="institution-logo-emoji" class="fs-4">🍀</span>
+        <img id="institution-logo" class="d-none" style="height: 32px; object-fit: contain;" alt="Logo">
+        <h2 class="text-dark tracking-tight mb-0 fs-4">MindSpire</h2>
+      </div>
+      
+      <nav class="nav flex-column gap-2 mt-5">
+        <button onclick="switchTab('roster')" id="tab-btn-roster" class="btn text-start w-100 px-3 py-2.5 rounded-3 fw-semibold text-neutral-700 bg-light">
+          👥 Assigned Roster
+        </button>
+        <button onclick="switchTab('calendar')" id="tab-btn-calendar" class="btn text-start w-100 px-3 py-2.5 rounded-3 fw-semibold text-neutral-700">
+          📅 Weekly Scheduler
+        </button>
+        <button onclick="switchTab('alerts')" id="tab-btn-alerts" class="btn text-start w-100 px-3 py-2.5 rounded-3 fw-semibold text-neutral-700">
+          🚨 Risk Alert Queue
+        </button>
+      </nav>
+    </div>
+
+    <div class="border-top border-neutral-100 pt-4 mt-5">
+      <span class="d-block text-muted" style="font-size: 10px;">Signed in as</span>
+      <span id="counselor-email" class="d-block text-dark fw-bold text-truncate mt-1">counselor@mindspire.edu</span>
+      <span class="badge bg-light border text-dark mt-2 badge-wellness">Verified Counselor</span>
+    </div>
+  </aside>
+
+  <!-- Main Content View -->
+  <main class="flex-grow-1 p-4 p-md-5 overflow-auto">
+    <div class="container max-w-5xl">
+      
+      <!-- Tab 1: Assigned Roster -->
+      <section id="sec-roster" class="space-y-4">
+        <div class="mb-4">
+          <h1 class="h2 text-dark font-semibold">Student Roster</h1>
+          <p class="text-muted text-sm">Review wellness indicators and clinical histories of students assigned to your care.</p>
+        </div>
+
+        <div class="wellness-card mb-4">
+          <input type="text" id="roster-search" oninput="filterRoster()" placeholder="Search students by pseudonym or email..." class="form-control border-light-subtle rounded-3 p-2.5 text-sm" />
+        </div>
+
+        <!-- States -->
+        <div id="roster-loading" class="text-center py-5 text-muted animate-pulse">Loading assigned roster...</div>
+        <div id="roster-error" class="text-center py-5 text-danger d-none">Error connection loading roster. Please try again.</div>
+        <div id="roster-empty" class="text-center py-5 text-muted d-none">No assigned students found in your roster.</div>
+
+        <div id="roster-grid" class="row g-4"></div>
+      </section>
+
+      <!-- Tab 2: Availability Scheduler -->
+      <section id="sec-calendar" class="d-none">
+        <div class="mb-4">
+          <h1 class="h2 text-dark font-semibold">Weekly Availability</h1>
+          <p class="text-muted text-sm">Create open booking blocks for student appointment scheduling.</p>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-12 col-lg-4">
+            <div class="wellness-card">
+              <h3 class="fs-5 text-dark mb-3">Add Open Slot</h3>
+              <form id="availability-form" onsubmit="handleAddAvailability(event)">
+                <div class="mb-3">
+                  <label class="form-label text-muted text-xs font-bold uppercase" style="font-size: 10px;">Start Time</label>
+                  <input type="datetime-local" id="slot-start" required class="form-control rounded-3 text-sm" />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label text-muted text-xs font-bold uppercase" style="font-size: 10px;">End Time</label>
+                  <input type="datetime-local" id="slot-end" required class="form-control rounded-3 text-sm" />
+                </div>
+                <button type="submit" class="btn btn-primary-wellness w-100 text-sm">Add Available Slot</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-8">
+            <div class="wellness-card">
+              <h3 class="fs-5 text-dark mb-3">Active Schedule Blocks</h3>
+              <div id="calendar-loading" class="text-center py-4 text-muted">Loading schedule blocks...</div>
+              <div id="calendar-empty" class="text-center py-4 text-muted d-none">No available slots defined.</div>
+              <div id="calendar-list" class="row g-3"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 3: Risk Alert Queue -->
+      <section id="sec-alerts" class="d-none">
+        <div class="mb-4">
+          <h1 class="h2 text-dark font-semibold">Risk Alert Queue</h1>
+          <p class="text-muted text-sm">Review incidents flagged by student mood deviations or assessment scoring indicators.</p>
+        </div>
+
+        <div id="alerts-loading" class="text-center py-5 text-muted">Loading risk alerts queue...</div>
+        <div id="alerts-empty" class="text-center py-5 text-muted d-none">All clear! No active risk alerts in the queue.</div>
+        <div id="alerts-list" class="space-y-4 d-flex flex-column gap-3"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Client JavaScript Logic -->
+  <script src="js/counselor.js"></script>
+</body>
+</html>

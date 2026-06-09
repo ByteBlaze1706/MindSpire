@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community Portal - MindSpire</title>
+  <!-- Google Fonts Outfit & Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .nav-link.active-nav {
+      font-weight: 600;
+      border-bottom: 2px solid var(--primary-color);
+      color: var(--text-dark) !important;
+    }
+    .post-card {
+      background-color: var(--white);
+      border: 1px solid rgba(142, 173, 194, 0.15);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(55, 58, 60, 0.02);
+      transition: all 0.2s ease;
+    }
+    .post-card:hover {
+      box-shadow: 0 8px 24px rgba(55, 58, 60, 0.05);
+    }
+    .reaction-pill {
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 20px;
+      padding: 5px 12px;
+      background-color: var(--bg-cream);
+      border: 1px solid rgba(142, 173, 194, 0.15);
+      color: var(--text-dark);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .reaction-pill:hover, .reaction-pill.active {
+      background-color: var(--bg-teal);
+      border-color: var(--primary-color);
+    }
+    .comment-card {
+      background-color: #FAF8F5;
+      border-left: 3px solid var(--primary-color);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 8px;
+    }
+    .comment-reply-card {
+      background-color: #FFF;
+      border-left: 3px solid var(--accent-color);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-left: 24px;
+      margin-top: 6px;
+    }
+    .filter-btn {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(142, 173, 194, 0.25);
+      background-color: var(--white);
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      background-color: var(--primary-color);
+      color: var(--white);
+      border-color: var(--primary-color);
+    }
+  </style>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-cream">
+
+  <!-- Header Navigation -->
+  <header class="bg-white border-bottom py-3 px-4 px-md-5">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <a href="dashboard.html" class="text-decoration-none text-dark d-flex align-items-center gap-2">
+          <span class="fs-4">🍀</span>
+          <h1 class="h5 mb-0 font-semibold tracking-tight">MindSpire</h1>
+        </a>
+      </div>
+      
+      <nav class="d-flex align-items-center gap-3 flex-wrap">
+        <a href="dashboard.html" class="nav-link text-muted text-sm px-1 py-1">Dashboard</a>
+        <a href="chat.html" class="nav-link text-muted text-sm px-1 py-1">AI Companion</a>
+        <a href="journal.html" class="nav-link text-muted text-sm px-1 py-1">My Journal</a>
+        <a href="assessments.html" class="nav-link text-muted text-sm px-1 py-1">Assessments</a>
+        <a href="community.html" class="nav-link active-nav text-muted text-sm px-1 py-1">Community</a>
+        <a href="resources.html" class="nav-link text-muted text-sm px-1 py-1">Resources</a>
+        <a href="notifications.html" class="nav-link text-muted text-sm px-1 py-1">Alerts</a>
+        <button onclick="logout()" class="btn btn-outline-danger btn-sm rounded-3 text-xs ms-1">Logout</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Space -->
+  <main class="container py-5">
+    <div class="row g-4">
+      
+      <!-- Left side: Filters & Publishing -->
+      <section class="col-12 col-md-4">
+        <!-- New Post card -->
+        <div class="card wellness-card mb-4 sticky-top" style="top: 24px; z-index: 10;">
+          <h2 class="h5 text-dark font-semibold mb-3">Share a Thought 🍃</h2>
+          <p class="text-xs text-muted mb-4">Post anonymously to your student board. Inputs are scanned for privacy safety compliance (PII) and crisis signals.</p>
+
+          <!-- Alert placeholders -->
+          <div id="post-alert" class="alert alert-danger d-none text-xs rounded-3 mb-3" role="alert"></div>
+
+          <form id="post-form" onsubmit="submitPost(event)">
+            <div class="mb-3">
+              <label for="post-title" class="form-label text-muted text-xs font-bold uppercase" style="font-size: 10px;">Post Title</label>
+              <input type="text" id="post-title" required class="form-control rounded-3 text-sm" placeholder="Summarize your thought..." />
+            </div>
+
+            <div class="mb-3">
+              <label for="post-category" class="form-label text-muted text-xs font-bold uppercase" style="font-size: 10px;">Category</label>
+              <select id="post-category" class="form-select rounded-3 text-sm">
+                <option value="General Support" selected>General Support</option>
+                <option value="Academic Stress">Academic Stress</option>
+                <option value="Exam Anxiety">Exam Anxiety</option>
+                <option value="Relationships">Relationships</option>
+                <option value="Motivation">Motivation</option>
+                <option value="Career">Career</option>
+                <option value="Wellness">Wellness</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="post-content" class="form-label text-muted text-xs font-bold uppercase" style="font-size: 10px;">Message</label>
+              <textarea id="post-content" required class="form-control rounded-3 text-sm" rows="6" placeholder="What would you like to share?"></textarea>
+            </div>
+
+            <div class="form-check mb-4">
+              <input class="form-check-input" type="checkbox" id="post-anonymous" checked>
+              <label class="form-check-label text-xs text-dark font-medium" for="post-anonymous">
+                Post anonymously (Show pseudonym) 🎭
+              </label>
+            </div>
+
+            <button type="submit" id="submit-post-btn" class="btn btn-primary-wellness w-100 py-2.5 text-sm">Publish Post</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Right side: Feed list -->
+      <section class="col-12 col-md-8">
+        
+        <!-- Toggle recent vs trending -->
+        <div class="card wellness-card p-3 mb-4 d-flex flex-row justify-content-between align-items-center flex-wrap gap-2">
+          <div class="d-flex gap-2">
+            <button onclick="setFeedType('recent')" id="feed-recent-btn" class="btn btn-sm btn-outline-dark active rounded-3 text-xs">🕒 Recent Feed</button>
+            <button onclick="setFeedType('trending')" id="feed-trending-btn" class="btn btn-sm btn-outline-dark rounded-3 text-xs">🔥 Trending score</button>
+          </div>
+          <span class="text-xs text-muted" id="feed-type-desc">Showing posts ordered by latest publication</span>
+        </div>
+
+        <!-- Categories Filters -->
+        <div class="d-flex flex-wrap gap-2 mb-4" id="filters-container">
+          <button onclick="filterCategory('all')" class="filter-btn active" data-cat="all">All discussions</button>
+          <button onclick="filterCategory('Academic Stress')" class="filter-btn" data-cat="Academic Stress">Academic Stress</button>
+          <button onclick="filterCategory('Exam Anxiety')" class="filter-btn" data-cat="Exam Anxiety">Exam Anxiety</button>
+          <button onclick="filterCategory('Relationships')" class="filter-btn" data-cat="Relationships">Relationships</button>
+          <button onclick="filterCategory('Motivation')" class="filter-btn" data-cat="Motivation">Motivation</button>
+          <button onclick="filterCategory('Career')" class="filter-btn" data-cat="Career">Career</button>
+          <button onclick="filterCategory('Wellness')" class="filter-btn" data-cat="Wellness">Wellness</button>
+        </div>
+
+        <!-- Loading / Empty states -->
+        <div id="feed-loading" class="text-center py-5 text-muted text-sm">Loading community board...</div>
+        <div id="feed-empty" class="text-center py-5 text-muted text-sm d-none">
+          <span class="fs-1">💬</span>
+          <h4 class="h6 font-semibold mt-2 text-dark">No discussions in this board yet.</h4>
+          <p class="text-xs mb-0 text-muted">Be the first to share a thought using the left form pane.</p>
+        </div>
+
+        <!-- Posts feed list container -->
+        <div id="posts-container" class="d-flex flex-column gap-4"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Crisis emergency support helpline Modal (Triggers on self-harm detect) -->
+  <div class="modal fade" id="crisisHelplineModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 rounded-4">
+        <div class="modal-header bg-danger text-white border-0 rounded-top-4 py-3">
+          <h5 class="modal-title font-semibold text-sm">🌿 Crisis Response & Support Helplines</h5>
+        </div>
+        <div class="modal-body p-4 text-sm leading-relaxed text-dark">
+          <p>We detected keywords associated with high emotional distress or self-harm in your message. Your safety is our primary focus. We want to support you.</p>
+          
+          <div class="card bg-danger-subtle border-danger p-3 mb-3 rounded-3">
+            <strong class="d-block text-danger mb-1">National Helpline: Tele-MANAS</strong>
+            <span class="fs-6 font-bold text-dark">📞 14416 or 1800-891-4416</span>
+            <p class="text-xs mb-0 mt-1">Free, confidential mental health counseling available 24/7.</p>
+          </div>
+
+          <p class="mb-0 text-xs text-muted">This post has been securely referred to the institution's counseling network, and a counselor will follow up with you. Please reach out to one of the numbers above if you are in immediate need.</p>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-outline-dark btn-sm rounded-3 px-4" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-white border-top py-4 mt-auto text-center text-xs text-muted">
+    <div class="container">
+      &copy; 2026 MindSpire Platform. All student data is secure and encrypted.
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Client Community Script -->
+  <script src="js/community.js"></script>
+</body>
+</html>

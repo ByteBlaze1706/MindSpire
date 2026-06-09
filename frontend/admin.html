@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Institution Admin Dashboard - MindSpire</title>
+  <!-- Google Fonts Outfit & Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Dynamic Branding Injector -->
+  <script src="js/branding-injector.js"></script>
+  <style>
+    .admin-nav-link.active-nav {
+      font-weight: 600;
+      border-bottom: 2px solid var(--primary-color);
+      color: var(--text-dark) !important;
+    }
+    .color-preview {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.1);
+      display: inline-block;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-cream">
+
+  <!-- Header Navigation -->
+  <header class="bg-white border-bottom py-3 px-4 px-md-5">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <a href="admin.html" class="text-decoration-none text-dark d-flex align-items-center gap-2">
+          <span id="institution-logo-emoji" class="fs-4">🍀</span>
+          <img id="institution-logo" class="d-none" style="height: 32px; object-fit: contain;" alt="Logo">
+          <h1 class="h5 mb-0 font-semibold tracking-tight">MindSpire Admin</h1>
+        </a>
+      </div>
+      
+      <nav class="d-flex align-items-center gap-4">
+        <span class="text-xs text-muted d-none d-md-inline" id="admin-user-email">admin@institution.edu</span>
+        <button onclick="logout()" class="btn btn-outline-danger btn-sm rounded-3 text-xs">Logout</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="container py-5">
+    <div class="row mb-5">
+      <div class="col-12">
+        <h2 class="h3 font-semibold text-dark">Administrative Command Center 🏛️</h2>
+        <p class="text-muted text-sm">Manage counselor registrations, configure institutional branding, publish targeted announcements, and monitor aggregated wellness stats.</p>
+      </div>
+    </div>
+
+    <!-- Quick Stats Overview Cards -->
+    <div class="row g-4 mb-5">
+      <div class="col-6 col-md-3">
+        <div class="card wellness-card text-center h-100">
+          <h3 class="h6 text-muted text-uppercase tracking-wider font-semibold mb-2" style="font-size: 11px;">Active Students</h3>
+          <h4 id="stat-students" class="h2 font-bold text-dark my-2">--</h4>
+          <p class="text-xs text-muted mb-0">Total profiles registered</p>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card wellness-card text-center h-100">
+          <h3 class="h6 text-muted text-uppercase tracking-wider font-semibold mb-2" style="font-size: 11px;">Verified Counselors</h3>
+          <h4 id="stat-counselors" class="h2 font-bold text-dark my-2">--</h4>
+          <p class="text-xs text-muted mb-0">Approved clinical roster</p>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card wellness-card text-center h-100">
+          <h3 class="h6 text-muted text-uppercase tracking-wider font-semibold mb-2" style="font-size: 11px;">Total Check-Ins</h3>
+          <h4 id="stat-checkins" class="h2 font-bold text-dark my-2">--</h4>
+          <p class="text-xs text-muted mb-0">Aggregate mood reports</p>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card wellness-card text-center h-100 border-danger-subtle">
+          <h3 class="h6 text-danger text-uppercase tracking-wider font-semibold mb-2" style="font-size: 11px;">Active Risk Alerts</h3>
+          <h4 id="stat-alerts" class="h2 font-bold text-danger my-2">--</h4>
+          <p class="text-xs text-muted mb-0">Awaiting counselor review</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <ul class="nav nav-tabs border-bottom-0 gap-2">
+          <li class="nav-item">
+            <button onclick="switchAdminTab('heatmap')" id="tab-heatmap" class="btn btn-light rounded-3 px-4 py-2 text-sm font-semibold active-nav">📊 Aggregated Heatmap</button>
+          </li>
+          <li class="nav-item">
+            <button onclick="switchAdminTab('counselors')" id="tab-counselors" class="btn btn-light rounded-3 px-4 py-2 text-sm font-semibold">👥 Counselor Approvals</button>
+          </li>
+          <li class="nav-item">
+            <button onclick="switchAdminTab('announcements')" id="tab-announcements" class="btn btn-light rounded-3 px-4 py-2 text-sm font-semibold">📣 Announcements</button>
+          </li>
+          <li class="nav-item">
+            <button onclick="switchAdminTab('branding')" id="tab-branding" class="btn btn-light rounded-3 px-4 py-2 text-sm font-semibold">🎨 Branding Manager</button>
+          </li>
+          <li class="nav-item">
+            <button onclick="switchAdminTab('audit')" id="tab-audit" class="btn btn-light rounded-3 px-4 py-2 text-sm font-semibold">📜 Security Audit Logs</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Tab 1: Aggregated Heatmap -->
+    <section id="sec-heatmap" class="admin-section">
+      <div class="card wellness-card mb-4">
+        <h3 class="h5 font-semibold mb-3">Anonymized Wellness Risk Heatmap</h3>
+        <p class="text-muted text-sm mb-4">
+          Visualizes average wellness scores by cohort. 
+          <strong>Privacy Safeguard:</strong> Any cohort containing <strong>fewer than 5 students</strong> is suppressed to preserve student anonymity. Admins cannot drill down to individual profiles, journals, chats, or notes.
+        </p>
+
+        <div class="row g-4">
+          <div class="col-12 col-lg-6">
+            <div class="p-3 border rounded-4 bg-white">
+              <h4 class="h6 text-muted text-center mb-3">Wellness Score by Department</h4>
+              <div style="position: relative; height: 260px;">
+                <canvas id="chartDept"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-6">
+            <div class="p-3 border rounded-4 bg-white">
+              <h4 class="h6 text-muted text-center mb-3">Wellness Score by Academic Year</h4>
+              <div style="position: relative; height: 260px;">
+                <canvas id="chartYear"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resource Usage Card -->
+      <div class="card wellness-card">
+        <h3 class="h5 font-semibold mb-3">Most Bookmarked Self-Help Resources</h3>
+        <p class="text-muted text-sm mb-4">Tracks the aggregate number of students bookmarking wellness guides to gauge resource utility.</p>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Resource Title</th>
+                <th>Category</th>
+                <th class="text-center">Active Student Bookmarks</th>
+              </tr>
+            </thead>
+            <tbody id="resource-analytics-list">
+              <tr>
+                <td colspan="3" class="text-center py-4 text-muted">Loading usage analytics...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 2: Counselor Approvals -->
+    <section id="sec-counselors" class="admin-section d-none">
+      <div class="card wellness-card">
+        <h3 class="h5 font-semibold mb-3">Counselor Verification Approvals</h3>
+        <p class="text-muted text-sm mb-4">Review credential submission details and approve or reject clinical logins at your institution.</p>
+        
+        <div id="counselor-alert" class="alert alert-success d-none text-xs rounded-3 mb-3"></div>
+
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Name</th>
+                <th>Email Address</th>
+                <th>Role</th>
+                <th>Verification Status</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pending-counselors-list">
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted">No pending counselor approvals found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 3: Announcements -->
+    <section id="sec-announcements" class="admin-section d-none">
+      <div class="row g-4">
+        <!-- Publisher Panel -->
+        <div class="col-12 col-md-5">
+          <div class="card wellness-card">
+            <h3 class="h5 font-semibold mb-3">Publish Announcement</h3>
+            <div id="announce-alert" class="alert alert-success d-none text-xs rounded-3 mb-3"></div>
+            
+            <form id="announce-form" onsubmit="publishAnnouncement(event)">
+              <div class="mb-3">
+                <label class="form-label text-xs font-bold text-muted">Announcement Title</label>
+                <input type="text" id="announce-title" class="form-control rounded-3 text-sm" required placeholder="e.g. Free Mental Health Seminars">
+              </div>
+              <div class="mb-3">
+                <label class="form-label text-xs font-bold text-muted">Content Body</label>
+                <textarea id="announce-content" class="form-control rounded-3 text-sm" rows="4" required placeholder="Details about event, time, venue, etc."></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label text-xs font-bold text-muted">Target Audience</label>
+                <select id="announce-audience" class="form-select rounded-3 text-sm">
+                  <option value="all">All Users</option>
+                  <option value="students">Students Only</option>
+                  <option value="counselors">Counselors Only</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label text-xs font-bold text-muted">Expiration Timestamp (Optional)</label>
+                <input type="datetime-local" id="announce-expiry" class="form-control rounded-3 text-sm">
+              </div>
+              <button type="submit" class="btn btn-primary-wellness w-100 py-2">Publish Notice</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- History list -->
+        <div class="col-12 col-md-7">
+          <div class="card wellness-card">
+            <h3 class="h5 font-semibold mb-3">Institutional Notices Board</h3>
+            <p class="text-muted text-sm mb-4">View active and expired notices published on your tenant board.</p>
+            
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Title</th>
+                    <th>Audience</th>
+                    <th>Expires At</th>
+                    <th class="text-end">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="announcements-list">
+                  <tr>
+                    <td colspan="4" class="text-center py-4 text-muted">No announcements listed.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 4: Branding Manager -->
+    <section id="sec-branding" class="admin-section d-none">
+      <div class="card wellness-card">
+        <h3 class="h5 font-semibold mb-3">Institutional Branding Customization</h3>
+        <p class="text-muted text-sm mb-4">
+          Customize the look and feel of MindSpire for your tenant dashboard. 
+          Changes are saved instantly and apply dynamically across all student, counselor, and admin portal screens.
+        </p>
+
+        <div id="branding-alert" class="alert alert-success d-none text-xs rounded-3 mb-3"></div>
+
+        <form id="branding-form" onsubmit="saveBranding(event)" class="row g-4">
+          <div class="col-12 col-md-6">
+            <div class="mb-3">
+              <label class="form-label text-xs font-bold text-muted">Institution Logo URL</label>
+              <input type="url" id="brand-logo" class="form-control rounded-3 text-sm" placeholder="https://domain.edu/logo.png">
+              <div class="form-text text-xs">Direct image link. Default emoji leaves custom branding deactivated.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label text-xs font-bold text-muted">Primary Theme Color (Soft Palette)</label>
+              <div class="d-flex gap-2">
+                <input type="color" id="brand-primary-picker" class="form-control form-control-color border rounded-3" value="#8EADC2" onchange="document.getElementById('brand-primary-text').value = this.value">
+                <input type="text" id="brand-primary-text" class="form-control rounded-3 text-sm" value="#8EADC2" maxlength="7" oninput="document.getElementById('brand-primary-picker').value = this.value">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label text-xs font-bold text-muted">Secondary Accent Color</label>
+              <div class="d-flex gap-2">
+                <input type="color" id="brand-accent-picker" class="form-control form-control-color border rounded-3" value="#F5AF8F" onchange="document.getElementById('brand-accent-text').value = this.value">
+                <input type="text" id="brand-accent-text" class="form-control rounded-3 text-sm" value="#F5AF8F" maxlength="7" oninput="document.getElementById('brand-accent-picker').value = this.value">
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="mb-3">
+              <label class="form-label text-xs font-bold text-muted">Support Contact Email Address</label>
+              <input type="email" id="brand-email" class="form-control rounded-3 text-sm" placeholder="support@institution.edu" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label text-xs font-bold text-muted">Campus Emergency Helpline Number</label>
+              <input type="text" id="brand-emergency" class="form-control rounded-3 text-sm" placeholder="212-854-5555" required>
+            </div>
+            <div class="mt-4 pt-3">
+              <button type="submit" class="btn btn-primary-wellness py-2 px-5">Save Custom Config</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Tab 5: Security Audit Logs -->
+    <section id="sec-audit" class="admin-section d-none">
+      <div class="card wellness-card">
+        <h3 class="h5 font-semibold mb-3">Security & Administrative Audit Logs</h3>
+        <p class="text-muted text-sm mb-4">
+          Immutable records of all administrator actions (branding changes, counselor approvals/rejections) and security events. 
+          <strong>Immutable Audit Guard:</strong> Modifications or deletions are rejected by DB triggers.
+        </p>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Timestamp</th>
+                <th>Administrator Email</th>
+                <th>Action</th>
+                <th>Target Details</th>
+                <th>IP Address</th>
+                <th>Client Agent</th>
+              </tr>
+            </thead>
+            <tbody id="audit-logs-list">
+              <tr>
+                <td colspan="6" class="text-center py-4 text-muted">Loading audit timelines...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="bg-white border-top py-4 mt-auto text-xs text-muted">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+      <div>&copy; 2026 MindSpire Platform. All student data is secure and encrypted.</div>
+      <div>
+        Support: <a href="#" class="branding-support-email text-decoration-none text-muted">support@mindspire.app</a> | 
+        Emergency Support: <span class="branding-emergency-phone font-semibold text-danger">14416</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Main Admin Logic -->
+  <script src="js/admin.js"></script>
+</body>
+</html>

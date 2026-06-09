@@ -1,0 +1,20 @@
+/* src/styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 33% 98%;      /* Soft warm sand tint */
+    --foreground: 20 10% 10%;      /* Soft warm black */
+    --primary: 210 55% 28%;        /* Slate blue base, dynamic override */
+    --accent: 18 80% 76%;          /* Warm peach, dynamic override */
+    --neutral-100: 20 10% 95%;     /* Soft slate border grey */
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+  }
+}

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Profile Details - MindSpire</title>
+  <!-- Google Fonts Outfit & Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Chart.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Dynamic Branding Injector -->
+  <script src="js/branding-injector.js"></script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="bg-white border-b border-neutral-100/50 py-3 px-4 px-md-5">
+    <div class="container max-w-5xl d-flex justify-content-between align-items-center">
+      <a href="counselor.html" class="text-neutral-500 hover:text-dark text-xs font-semibold text-decoration-none">
+        ← Back to Clinical Dashboard
+      </a>
+      <span class="badge bg-light text-dark border badge-wellness">Clinical History Profile</span>
+    </div>
+  </header>
+
+  <main class="py-5 px-4 px-md-5">
+    <div class="container max-w-5xl space-y-5 d-flex flex-column gap-4">
+
+      <!-- Loading State -->
+      <div id="profile-loading" class="text-center py-5 text-muted animate-pulse">Decrypting student clinical files...</div>
+
+      <!-- Access Denied State -->
+      <div id="profile-denied" class="d-none max-w-md mx-auto text-center wellness-card border-danger space-y-4">
+        <span class="fs-1">🔒</span>
+        <h3 class="text-dark font-semibold fs-5 mt-2">Assigned Access Required</h3>
+        <p class="text-muted text-xs leading-relaxed">
+          You do not have clinical authorization to view this student profile. Counselors can only query data of students assigned to them.
+        </p>
+        <a href="counselor.html" class="btn btn-outline-dark text-xs rounded-3">Return to Dashboard</a>
+      </div>
+
+      <!-- Main Profile details wrapper -->
+      <div id="profile-details" class="d-none space-y-5 d-flex flex-column gap-4">
+        
+        <!-- Banner card -->
+        <div class="wellness-card d-flex flex-column flex-md-row justify-content-between align-items-center gap-4">
+          <div class="d-flex align-items-center gap-3">
+            <div class="avatar-holder bg-light rounded-circle p-3 text-2xl" style="font-size: 24px;">👤</div>
+            <div>
+              <h2 id="student-pseudonym" class="h4 text-dark font-semibold mb-0">Anonymous Student</h2>
+              <p id="student-email" class="text-muted text-xs mb-0">email@mindspire.edu</p>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 text-xs font-semibold flex-wrap">
+            <span id="consent-journals-badge" class="badge badge-wellness bg-light border text-dark">Journals Consent</span>
+            <span id="consent-chats-badge" class="badge badge-wellness bg-light border text-dark">AI chats Consent</span>
+          </div>
+        </div>
+
+        <!-- Tab List Menu -->
+        <div class="flex bg-neutral-100/70 p-1.5 rounded-2xl w-fit flex-wrap d-flex gap-1">
+          <button onclick="switchProfileTab('summary')" id="profile-tab-summary" class="btn text-xs rounded-3 font-semibold bg-white shadow-sm text-dark px-3 py-2">
+            Wellness Summary
+          </button>
+          <button onclick="switchProfileTab('assessments')" id="profile-tab-assessments" class="btn text-xs rounded-3 font-semibold text-muted px-3 py-2">
+            Clinical Assessments
+          </button>
+          <button onclick="switchProfileTab('journals')" id="profile-tab-journals" class="btn text-xs rounded-3 font-semibold text-muted px-3 py-2">
+            Journal Entries
+          </button>
+          <button onclick="switchProfileTab('notes')" id="profile-tab-notes" class="btn text-xs rounded-3 font-semibold text-muted px-3 py-2">
+            Session Notes Logs
+          </button>
+        </div>
+
+        <!-- Tab 1: Wellness Summary -->
+        <div id="sec-profile-summary" class="row g-4">
+          <div class="col-12 col-md-4">
+            <div class="wellness-card text-center d-flex flex-column justify-content-center align-items-center">
+              <span class="fs-2">📈</span>
+              <span class="text-uppercase text-muted text-xs font-bold mt-2" style="font-size: 10px;">Rolling Mood Avg</span>
+              <strong id="mood-avg-val" class="d-block text-dark font-semibold fs-1 my-2">N/A</strong>
+              <span class="text-muted" style="font-size: 9px;">Out of 5.0 (Past 30 Check-ins)</span>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-8">
+            <div class="wellness-card">
+              <h3 class="fs-6 text-dark font-semibold mb-3">Mood Trend Analytics</h3>
+              <div style="height: 180px; width: 100%;">
+                <canvas id="mood-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Clinical Assessments -->
+        <div id="sec-profile-assessments" class="wellness-card d-none">
+          <h3 class="fs-6 text-dark font-semibold mb-3">Standard Clinical Scales History</h3>
+          <div class="table-responsive">
+            <table class="table table-hover text-sm">
+              <thead>
+                <tr class="text-muted" style="font-size: 11px;">
+                  <th>Scale type</th>
+                  <th>Total Score</th>
+                  <th>Severity level</th>
+                  <th>Completed Date</th>
+                </tr>
+              </thead>
+              <tbody id="assessments-table-body"></tbody>
+            </table>
+          </div>
+          <div id="assessments-empty" class="text-center py-4 text-muted d-none">No assessment history found.</div>
+        </div>
+
+        <!-- Tab 3: Journal Entries (Consent Gate) -->
+        <div id="sec-profile-journals" class="d-none">
+          <!-- Lock screen -->
+          <div id="journals-lock" class="consent-lock-overlay d-none">
+            <span class="fs-1">🔒</span>
+            <h4 class="text-dark font-semibold fs-5 mt-2">Clinical Consent Required</h4>
+            <p class="text-muted text-xs mt-2 leading-relaxed max-w-sm mx-auto">
+              Student has not enabled Wellness Journal sharing permissions. The student must authorize sharing from their settings.
+            </p>
+          </div>
+
+          <div id="journals-list" class="space-y-4 d-flex flex-column gap-3 d-none"></div>
+          <div id="journals-empty" class="text-center py-5 text-muted d-none">No journal logs registered by student.</div>
+        </div>
+
+        <!-- Tab 4: Session Notes Logs -->
+        <div id="sec-profile-notes" class="space-y-4 d-flex flex-column gap-3 d-none">
+          <h3 class="fs-6 text-dark font-semibold">Booked Sessions & Notes</h3>
+          <div id="notes-empty" class="text-center py-4 text-muted d-none">No sessions scheduled with this student.</div>
+          <div id="appointments-list" class="d-flex flex-column gap-3"></div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Script logic -->
+  <script src="js/student-detail.js"></script>
+</body>
+</html>
