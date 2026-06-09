@@ -3,8 +3,10 @@
 import { createBrowserClient } from '@supabase/ssr';
 
 export function createClient() {
+  const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const cleanUrl = rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
   return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    cleanUrl,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 }
