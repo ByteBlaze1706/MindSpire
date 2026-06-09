@@ -1,6 +1,3 @@
-// src/lib/services/crisis-detector.service.ts
-// Analyzes content for clinical crisis cues (self-harm, suicidal ideation) and logs alerts.
-import { RiskAlertRepository } from '../repositories/risk.repository'; // If missing, we can implement alerts directly using Supabase client
 import { createClient } from '../supabase/server';
 
 const CRISIS_PATTERNS = [

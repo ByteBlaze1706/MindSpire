@@ -22,7 +22,7 @@ export class RecommendationService {
       .eq('user_id', userId)
       .order('completed_at', { ascending: false })
       .limit(1)
-      .maybeSingle();
+      .maybeSingle() as any;
 
     // 2. Fetch latest mood check-in descriptor
     const { data: latestMood } = await supabase

@@ -3,7 +3,7 @@ import React from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/server';
 import { UserRepository } from '../../../lib/repositories/user.repository';
-import { CommunityRepository } from '../../../lib/repositories/community.repository';
+import { CommunityRepository, ModerationReport, ModerationAppeal } from '../../../lib/repositories/community.repository';
 import { ModerationContainer } from './moderation-container'; // Client container
 
 const userRepo = new UserRepository();
@@ -28,8 +28,8 @@ export default async function ModerationPortalPage({
   }
 
   // Fetch pending reports and appeals
-  let reports = [];
-  let appeals = [];
+  let reports: ModerationReport[] = [];
+  let appeals: ModerationAppeal[] = [];
   let fetchError = false;
 
   try {

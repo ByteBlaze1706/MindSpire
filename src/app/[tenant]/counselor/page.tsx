@@ -2,8 +2,8 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/server';
-import { UserRepository } from '../../../lib/repositories/user.repository';
-import { CounselorRepository } from '../../../lib/repositories/counselor.repository';
+import { UserRepository, UserProfile } from '../../../lib/repositories/user.repository';
+import { CounselorRepository, CounselorAvailability, RiskAlert } from '../../../lib/repositories/counselor.repository';
 import { CounselorDashboardContainer } from './counselor-dashboard-container';
 
 const userRepo = new UserRepository();
@@ -32,9 +32,9 @@ export default async function CounselorDashboardPage({
   }
 
   // Load roster, availability slots, and risk alerts
-  let roster = [];
-  let slots = [];
-  let riskAlerts = [];
+  let roster: (UserProfile & { pseudonym: string; active_consent: boolean })[] = [];
+  let slots: CounselorAvailability[] = [];
+  let riskAlerts: RiskAlert[] = [];
   let fetchError = false;
 
   try {

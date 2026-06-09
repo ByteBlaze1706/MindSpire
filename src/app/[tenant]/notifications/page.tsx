@@ -3,7 +3,7 @@ import React from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/server';
 import { UserRepository } from '../../../lib/repositories/user.repository';
-import { NotificationRepository } from '../../../lib/repositories/notification.repository';
+import { NotificationRepository, NotificationLog } from '../../../lib/repositories/notification.repository';
 import { NotificationsFeed } from './notifications-feed'; // Client container
 
 const userRepo = new UserRepository();
@@ -27,7 +27,7 @@ export default async function NotificationsCenterPage({
     redirect(`/${resolvedParams.tenant}/login`);
   }
 
-  let list = [];
+  let list: NotificationLog[] = [];
   let fetchError = false;
 
   try {

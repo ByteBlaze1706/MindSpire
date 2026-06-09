@@ -2,8 +2,8 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { NotificationLog } from '../../../../lib/repositories/notification.repository';
-import { markNotificationRead, markAllNotificationsRead } from '../../../../lib/actions/notification.actions';
+import { NotificationLog } from '../../../lib/repositories/notification.repository';
+import { markNotificationRead, markAllNotificationsRead } from '../../../lib/actions/notification.actions';
 
 interface NotificationsFeedProps {
   notifications: NotificationLog[];

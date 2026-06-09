@@ -14,6 +14,7 @@ export interface TenantConfig {
     supportEmail: string;
     emergencyPhone: string;
   };
+  allowed_domains: string[];
 }
 
 const TenantContext = createContext<TenantConfig | null>(null);

@@ -3,6 +3,7 @@
 
 import { createClient } from '../supabase/server';
 import { CounselorRepository } from '../repositories/counselor.repository';
+export type { CounselorAvailability } from '../repositories/counselor.repository';
 import { revalidatePath } from 'next/cache';
 
 const counselorRepo = new CounselorRepository();

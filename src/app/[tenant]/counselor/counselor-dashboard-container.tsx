@@ -3,10 +3,10 @@
 
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { CounselorAvailability, RiskAlert } from '../../lib/repositories/counselor.repository';
-import { UserProfile } from '../../lib/repositories/user.repository';
+import { CounselorAvailability, RiskAlert } from '../../../lib/repositories/counselor.repository';
+import { UserProfile } from '../../../lib/repositories/user.repository';
 import { CounselorCalendar } from '../../../components/counselor/counselor-calendar';
-import { resolveRiskAlertAction } from '../../actions/counselor.actions';
+import { resolveRiskAlertAction } from '../../../lib/actions/counselor.actions';
 
 interface CounselorDashboardProps {
   roster: (UserProfile & { pseudonym: string; active_consent: boolean })[];

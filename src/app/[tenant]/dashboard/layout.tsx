@@ -12,11 +12,9 @@ const userRepo = new UserRepository();
 export default async function DashboardLayout({
   children,
   params,
-  modal,
 }: {
   children: React.ReactNode;
   params: Promise<{ tenant: string }>;
-  modal?: React.ReactNode;
 }) {
   const resolvedParams = await params;
   const supabase = await createClient();
@@ -93,8 +91,6 @@ export default async function DashboardLayout({
           {children}
         </main>
       </div>
-
-      {modal}
 
       {/* Floating Emergency Widget */}
       <EmergencySupportWidget />

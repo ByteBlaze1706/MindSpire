@@ -2,7 +2,8 @@
 'use server';
 
 import { createClient } from '../supabase/server';
-import { CommunityRepository, CommunityPost, CommunityComment } from '../repositories/community.repository';
+import { CommunityRepository, CommunityPost, CommunityComment, ModerationReport, ModerationAppeal } from '../repositories/community.repository';
+export type { CommunityPost, CommunityComment, ModerationReport, ModerationAppeal };
 import { CrisisDetectorService } from '../services/crisis-detector.service';
 import { revalidatePath } from 'next/cache';
 

@@ -3,7 +3,7 @@ import React from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/server';
 import { UserRepository } from '../../../lib/repositories/user.repository';
-import { CommunityRepository } from '../../../lib/repositories/community.repository';
+import { CommunityRepository, CommunityPost } from '../../../lib/repositories/community.repository';
 import { FeedContainer } from './feed-container'; // Client side container
 
 const userRepo = new UserRepository();
@@ -36,7 +36,7 @@ export default async function CommunityFeedPage({
   const activeSearch = resolvedSearchParams.search || '';
 
   // Fetch posts from repository
-  let posts = [];
+  let posts: CommunityPost[] = [];
   let fetchError = false;
   try {
     posts = await communityRepo.getPosts(

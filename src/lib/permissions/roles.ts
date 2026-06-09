@@ -44,8 +44,8 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   counselor: [
     { action: 'read', resource: 'profile', conditions: (ctx) => ctx.isAssigned || ctx.hasConsent },
     { action: 'read', resource: 'mood_logs', conditions: (ctx) => ctx.isAssigned || ctx.hasConsent },
-    { action: 'read', resource: 'journals', conditions: (ctx) => ctx.hasConsent }, -- Assignment is not enough for journals
-    { action: 'read', resource: 'chats', conditions: (ctx) => ctx.hasConsent },    -- Assignment is not enough for chats
+    { action: 'read', resource: 'journals', conditions: (ctx) => ctx.hasConsent }, // Assignment is not enough for journals
+    { action: 'read', resource: 'chats', conditions: (ctx) => ctx.hasConsent },    // Assignment is not enough for chats
     
     { action: 'create', resource: 'appointments' },
     { action: 'read', resource: 'appointments', conditions: (ctx) => ctx.counselorId === ctx.userId },
