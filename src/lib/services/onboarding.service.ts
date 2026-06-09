@@ -28,6 +28,7 @@ export class OnboardingService {
       realFirstName: string;
       realLastName: string;
       pseudonym: string;
+      tokenId: string;
       avatarConfig: Record<string, any>;
       languagePreference: string;
       counselorConsent?: {
@@ -66,6 +67,7 @@ export class OnboardingService {
       institution_id: profile.institution_id,
       pseudonym: payload.pseudonym,
       avatar_config: payload.avatarConfig,
+      token_id: payload.tokenId,
     });
 
     // 5. Update notification preferences

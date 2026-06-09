@@ -12,6 +12,7 @@ export async function submitOnboardingFlow(
     realFirstName: string;
     realLastName: string;
     pseudonym: string;
+    tokenId: string;
     avatarConfig: Record<string, any>;
     languagePreference: string;
     counselorConsent?: {

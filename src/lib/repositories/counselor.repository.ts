@@ -121,10 +121,10 @@ export class CounselorRepository {
 
     if (studentIds.length === 0) return [];
 
-    // 3. Resolve user details and anonymous profile pseudonyms
+    // 3. Resolve user details and anonymous profile pseudonyms & token IDs
     const { data: users, error } = await supabase
       .from('users')
-      .select('*, anonymous_profiles(pseudonym)')
+      .select('*, anonymous_profiles(pseudonym, token_id)')
       .in('id', studentIds);
 
     if (error || !users) return [];
@@ -134,16 +134,17 @@ export class CounselorRepository {
       return {
         id: user.id,
         institution_id: user.institution_id,
-        email: user.email,
+        email: '', // Hidden for privacy
         role: user.role,
-        real_first_name: user.real_first_name,
-        real_last_name: user.real_last_name,
+        real_first_name: null, // Hidden for privacy
+        real_last_name: null, // Hidden for privacy
         counselor_status: user.counselor_status,
         is_approved: user.is_approved,
         created_at: user.created_at,
         pseudonym: user.anonymous_profiles?.[0]?.pseudonym || 'Anonymous Peer',
+        token_id: user.anonymous_profiles?.[0]?.token_id || '',
         active_consent: studentConsent,
-      };
+      } as any;
     });
   }
 

@@ -21,6 +21,7 @@ export interface AnonymousProfile {
   institution_id: string;
   pseudonym: string;
   avatar_config: Record<string, any>;
+  token_id?: string;
 }
 
 export class UserRepository {

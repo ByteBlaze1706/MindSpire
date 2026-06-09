@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -45,9 +46,8 @@ export function LoginForm() {
   };
 
   const handleGoogleLogin = () => {
-    // Preserves tenant code context inside redirection endpoint callback
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    window.location.href = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${window.location.origin}/${tenant.subdomain}/callback`;
+    window.location.href = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${window.location.origin}/callback`;
   };
 
   return (
@@ -138,6 +138,15 @@ export function LoginForm() {
         </svg>
         Sign in with Google
       </button>
+
+      <div className="mt-6 text-center">
+        <p className="text-xs text-neutral-500">
+          New to MindSpire?{' '}
+          <Link href="/register" className="font-semibold text-neutral-700 hover:underline">
+            Create an Account
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

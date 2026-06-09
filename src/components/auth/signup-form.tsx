@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -11,7 +12,6 @@ import { useTenant } from '../providers/tenant-provider';
 const signupSchema = z.object({
   email: z.string().email('Please enter a valid university email address.'),
   password: z.string().min(8, 'Password must be at least 8 characters long.'),
-  accessCode: z.string().min(1, 'Institution access code is required.'),
 });
 
 type SignupInput = z.infer<typeof signupSchema>;
@@ -50,7 +50,6 @@ export function SignupForm() {
       email: data.email,
       password_hash: data.password,
       tenantSubdomain: tenant.subdomain,
-      accessCode: data.accessCode,
     });
 
     if (result.success) {
@@ -115,21 +114,6 @@ export function SignupForm() {
           )}
         </div>
 
-        <div>
-          <label className="block text-xs font-medium uppercase tracking-wider text-neutral-500 mb-2">
-            Institution Access Code
-          </label>
-          <input
-            {...register('accessCode')}
-            type="text"
-            placeholder="Enter joining code"
-            className="w-full px-5 py-3.5 bg-neutral-50 border border-neutral-200 focus:border-neutral-400 focus:bg-white rounded-2xl outline-none transition duration-200 text-neutral-800 placeholder-neutral-400 text-sm"
-          />
-          {errors.accessCode && (
-            <p className="mt-1.5 text-xs text-rose-500">{errors.accessCode.message}</p>
-          )}
-        </div>
-
         <button
           type="submit"
           disabled={loading}
@@ -138,6 +122,15 @@ export function SignupForm() {
           {loading ? 'Creating Account...' : 'Register'}
         </button>
       </form>
+
+      <div className="mt-6 text-center">
+        <p className="text-xs text-neutral-500">
+          Already have an account?{' '}
+          <Link href="/login" className="font-semibold text-neutral-700 hover:underline">
+            Sign In
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

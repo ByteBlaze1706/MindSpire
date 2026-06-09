@@ -1,7 +1,7 @@
 // src/components/auth/onboarding-form.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -12,6 +12,7 @@ const onboardingSchema = z.object({
   realFirstName: z.string().min(1, 'Real first name is required.'),
   realLastName: z.string().min(1, 'Real last name is required.'),
   pseudonym: z.string().min(3, 'Pseudonym must be at least 3 characters.').max(30, 'Pseudonym is too long.'),
+  tokenId: z.string().min(3, 'Token ID is required.'),
   languagePreference: z.string().default('en'),
   counselorId: z.string().optional(),
   shareConsent: z.boolean().default(false),
@@ -38,10 +39,34 @@ export function OnboardingForm({ counselors }: { counselors: CounselorOption[] }
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<OnboardingInput>({
     resolver: zodResolver(onboardingSchema),
   });
+
+  const generateAnonDetails = () => {
+    const adjectives = ['Quiet', 'Calm', 'Gentle', 'Warm', 'Serene', 'Peaceful', 'Soft', 'Silent', 'Restful', 'Mindful', 'Friendly', 'Joyful', 'Kind', 'Bright', 'Tranquil', 'Brave', 'Strong', 'Radiant'];
+    const nouns = ['Lotus', 'Lily', 'Rose', 'Sage', 'Petal', 'Forest', 'Ocean', 'River', 'Breeze', 'Meadow', 'Pebble', 'Otter', 'Panda', 'Koala', 'Robin', 'Bluebird', 'Fern', 'Willow'];
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const num = Math.floor(Math.random() * 900) + 100;
+    const name = `${adj} ${noun} ${num}`;
+    
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let token = '';
+    for (let i = 0; i < 6; i++) {
+      token += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    const tokenId = `${tenant.subdomain.toUpperCase()}-${token}`;
+    
+    setValue('pseudonym', name);
+    setValue('tokenId', tokenId);
+  };
+
+  useEffect(() => {
+    generateAnonDetails();
+  }, [tenant]);
 
   const watchShareConsent = watch('shareConsent');
   const watchCounselorId = watch('counselorId');
@@ -54,6 +79,7 @@ export function OnboardingForm({ counselors }: { counselors: CounselorOption[] }
       realFirstName: data.realFirstName,
       realLastName: data.realLastName,
       pseudonym: data.pseudonym,
+      tokenId: data.tokenId,
       avatarConfig: { icon: 'otter', color: '#0F4C81' },
       languagePreference: data.languagePreference,
       notifications: {
@@ -74,7 +100,7 @@ export function OnboardingForm({ counselors }: { counselors: CounselorOption[] }
     const result = await submitOnboardingFlow(tenant.subdomain, payload);
 
     if (result.success) {
-      window.location.href = `/${tenant.subdomain}/dashboard`;
+      window.location.href = `/dashboard`;
     } else {
       setErrorMsg(result.error || 'Onboarding registration failed.');
       setLoading(false);
@@ -187,20 +213,31 @@ export function OnboardingForm({ counselors }: { counselors: CounselorOption[] }
         {/* STEP 2: Pseudonyms Handles */}
         {step === 2 && (
           <div className="space-y-5">
-            <div>
-              <label className="block text-xs font-medium uppercase tracking-wider text-neutral-500 mb-2">
-                Anonymous Pseudonym
-              </label>
-              <input
-                {...register('pseudonym')}
-                type="text"
-                placeholder="e.g. FriendlyOtter23"
-                className="w-full px-5 py-3.5 bg-neutral-50 border border-neutral-200 focus:border-neutral-400 focus:bg-white rounded-2xl outline-none transition duration-200 text-neutral-800 text-sm"
-              />
-              {errors.pseudonym && (
-                <p className="mt-1.5 text-xs text-rose-500">{errors.pseudonym.message}</p>
-              )}
+            <input type="hidden" {...register('pseudonym')} />
+            <input type="hidden" {...register('tokenId')} />
+            
+            <div className="p-6 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 border border-emerald-100/50 rounded-2xl text-center space-y-4 shadow-sm">
+              <div>
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400">Your Anonymous Display Name</span>
+                <span className="block text-2xl font-bold text-emerald-800 tracking-tight mt-1">{watch('pseudonym') || 'Generating...'}</span>
+              </div>
+              <div className="border-t border-emerald-100/50 pt-3">
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400">Your Secure Token ID</span>
+                <span className="block text-lg font-mono font-bold text-teal-800 mt-1">{watch('tokenId') || 'Generating...'}</span>
+              </div>
+              
+              <button
+                type="button"
+                onClick={generateAnonDetails}
+                className="mt-2 text-xs font-semibold text-emerald-700 hover:text-emerald-800 underline flex items-center gap-1.5 mx-auto cursor-pointer"
+              >
+                🔄 Generate New Identity
+              </button>
             </div>
+            
+            <p className="text-xs text-neutral-400 text-center leading-normal">
+              Counselors and peer students will only see this anonymous name and token ID. Your real identity remains encrypted.
+            </p>
 
             <div className="flex gap-4">
               <button

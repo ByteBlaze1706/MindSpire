@@ -179,7 +179,7 @@ export async function getStudentClinicalProfile(
     // 2. Fetch basic profile & anonymous details
     const { data: studentUser } = await supabase
       .from('users')
-      .select('*, anonymous_profiles(pseudonym, avatar_config)')
+      .select('*, anonymous_profiles(pseudonym, avatar_config, token_id)')
       .eq('id', studentId)
       .single();
 
@@ -218,11 +218,9 @@ export async function getStudentClinicalProfile(
       success: true,
       profile: {
         id: studentUser.id,
-        email: studentUser.email,
         pseudonym: studentUser.anonymous_profiles?.[0]?.pseudonym || 'Anonymous Peer',
         avatar_config: studentUser.anonymous_profiles?.[0]?.avatar_config || {},
-        real_first_name: studentUser.real_first_name, // (KMS encrypted - decrypter on client wrapper if needed, or left masked)
-        real_last_name: studentUser.real_last_name,
+        token_id: studentUser.anonymous_profiles?.[0]?.token_id || '',
       },
       moodLogs: moodLogs || [],
       assessmentResults: (assessmentResults || []).map((row: any) => ({

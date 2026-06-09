@@ -38,17 +38,17 @@ export async function signInWithEmail(formData: {
   }
 
   // Redirect to target dashboard path upon successful auth
-  redirect(`/${formData.tenantSubdomain}/dashboard`);
+  redirect('/dashboard');
 }
 
 /**
  * Server Action: Standard signout.
  */
-export async function signOut(tenantSubdomain: string) {
+export async function signOut() {
   try {
     await authService.logout();
   } catch (error) {
     // Ignore error
   }
-  redirect(`/${tenantSubdomain}/login`);
+  redirect('/login');
 }
