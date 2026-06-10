@@ -31,8 +31,8 @@ export async function markNotificationRead(tenantSubdomain: string, id: string) 
 
   try {
     await notifRepo.markAsRead(id, user.id);
-    revalidatePath(`/${tenantSubdomain}/dashboard`);
-    revalidatePath(`/${tenantSubdomain}/notifications`);
+    revalidatePath('/dashboard');
+    revalidatePath('/notifications');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -47,8 +47,8 @@ export async function markAllNotificationsRead(tenantSubdomain: string) {
 
   try {
     await notifRepo.markAllAsRead(user.id);
-    revalidatePath(`/${tenantSubdomain}/dashboard`);
-    revalidatePath(`/${tenantSubdomain}/notifications`);
+    revalidatePath('/dashboard');
+    revalidatePath('/notifications');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };

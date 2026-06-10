@@ -15,3 +15,5 @@ backend/*.class
 backups/
 maven/
 maven.zip
+.vercel
+scratch/

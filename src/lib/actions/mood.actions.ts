@@ -39,7 +39,7 @@ export async function submitDailyMoodCheckIn(
       notes,
     });
     
-    revalidatePath(`/${tenantSubdomain}/dashboard`);
+    revalidatePath('/dashboard');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };

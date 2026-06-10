@@ -88,7 +88,7 @@ export async function createPostAction(
       await crisisDetector.handleCrisisTrigger(user.id, profile.institution_id, 'community', `${title}\n${content}`);
     }
 
-    revalidatePath(`/${tenantSubdomain}/community`);
+    revalidatePath('/community');
     return { success: true, postId, crisisTriggered: isCrisisTriggered };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -117,8 +117,8 @@ export async function editPostAction(
 
   try {
     await communityRepo.updatePost(postId, user.id, title, content, category);
-    revalidatePath(`/${tenantSubdomain}/community`);
-    revalidatePath(`/${tenantSubdomain}/community/post/${postId}`);
+    revalidatePath('/community');
+    revalidatePath(`/community/post/${postId}`);
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -136,7 +136,7 @@ export async function deletePostAction(tenantSubdomain: string, postId: string) 
 
   try {
     await communityRepo.softDeletePost(postId, user.id);
-    revalidatePath(`/${tenantSubdomain}/community`);
+    revalidatePath('/community');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -210,7 +210,7 @@ export async function createCommentAction(
       });
     }
 
-    revalidatePath(`/${tenantSubdomain}/community/post/${postId}`);
+    revalidatePath(`/community/post/${postId}`);
     return { success: true, commentId, crisisTriggered: isCrisisTriggered };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -228,7 +228,7 @@ export async function deleteCommentAction(tenantSubdomain: string, postId: strin
 
   try {
     await communityRepo.softDeleteComment(commentId, user.id);
-    revalidatePath(`/${tenantSubdomain}/community/post/${postId}`);
+    revalidatePath(`/community/post/${postId}`);
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -252,8 +252,8 @@ export async function toggleReactionAction(
 
   try {
     const isAdded = await communityRepo.toggleReaction(user.id, targetType, targetId, reactionType);
-    revalidatePath(`/${tenantSubdomain}/community/post/${postId}`);
-    revalidatePath(`/${tenantSubdomain}/community`);
+    revalidatePath(`/community/post/${postId}`);
+    revalidatePath('/community');
     return { success: true, reacted: isAdded };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -300,7 +300,7 @@ export async function submitAppealAction(tenantSubdomain: string, actionId: stri
 
   try {
     await communityRepo.submitAppeal(user.id, profile.institution_id, actionId, reason);
-    revalidatePath(`/${tenantSubdomain}/moderation`);
+    revalidatePath('/moderation');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -328,7 +328,7 @@ export async function resolveReportAction(
 
   try {
     await communityRepo.resolveReport(reportId, user.id, profile.institution_id, action, reason);
-    revalidatePath(`/${tenantSubdomain}/moderation`);
+    revalidatePath('/moderation');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -356,7 +356,7 @@ export async function resolveAppealAction(
 
   try {
     await communityRepo.resolveAppeal(appealId, status, notes);
-    revalidatePath(`/${tenantSubdomain}/moderation`);
+    revalidatePath('/moderation');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };

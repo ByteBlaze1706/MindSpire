@@ -84,7 +84,7 @@ export async function submitAssessmentResult(
       });
     }
 
-    revalidatePath(`/${tenantSubdomain}/assessments`);
+    revalidatePath('/assessments');
     return { success: true, severity, totalScore, isCritical };
   } catch (error: any) {
     return { success: false, error: error.message };

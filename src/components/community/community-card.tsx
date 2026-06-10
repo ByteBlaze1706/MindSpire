@@ -115,7 +115,7 @@ export function CommunityCard({
         {isDetailed ? (
           <h1 className="text-xl font-semibold text-neutral-800 tracking-tight">{post.title}</h1>
         ) : (
-          <Link href={`/${tenantSubdomain}/community/post/${post.id}`}>
+          <Link href={`/community/post/${post.id}`}>
             <h3 className="text-base font-semibold text-neutral-800 hover:text-neutral-600 transition duration-150 tracking-tight">
               {post.title}
             </h3>
@@ -168,7 +168,7 @@ export function CommunityCard({
         <div className="flex items-center gap-3">
           {!isDetailed && (
             <Link
-              href={`/${tenantSubdomain}/community/post/${post.id}`}
+              href={`/community/post/${post.id}`}
               className="text-xs font-semibold text-neutral-500 hover:text-neutral-800 transition"
             >
               💬 Comment ({post.comment_count || 0})

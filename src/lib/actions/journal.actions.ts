@@ -41,7 +41,7 @@ export async function submitJournalLog(
       riskLevel
     );
     
-    revalidatePath(`/${tenantSubdomain}/journal`);
+    revalidatePath('/journal');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -58,7 +58,7 @@ export async function deleteJournal(tenantSubdomain: string, entryId: string) {
 
   try {
     await journalRepo.softDeleteEntry(entryId, user.id);
-    revalidatePath(`/${tenantSubdomain}/journal`);
+    revalidatePath('/journal');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };

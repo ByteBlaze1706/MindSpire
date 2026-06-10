@@ -67,7 +67,7 @@ export function FeedContainer({
     if (c && c !== 'All') params.set('category', c);
     if (s) params.set('search', s);
 
-    router.push(`/${tenantSubdomain}/community?${params.toString()}`);
+    router.push(`/community?${params.toString()}`);
   };
 
   const handleCreatePost = (e: React.FormEvent) => {

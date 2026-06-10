@@ -41,7 +41,7 @@ export async function createAvailabilitySlot(
   try {
     const { user, profile } = await verifyApprovedCounselor();
     await counselorRepo.createAvailability(user.id, profile.institution_id, startTime, endTime);
-    revalidatePath(`/${tenantSubdomain}/counselor`);
+    revalidatePath('/counselor');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -55,7 +55,7 @@ export async function deleteAvailabilitySlot(tenantSubdomain: string, slotId: st
   try {
     const { user } = await verifyApprovedCounselor();
     await counselorRepo.deleteAvailability(slotId, user.id);
-    revalidatePath(`/${tenantSubdomain}/counselor`);
+    revalidatePath('/counselor');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -96,7 +96,7 @@ export async function saveSessionNoteAction(
       noteText
     );
 
-    revalidatePath(`/${tenantSubdomain}/counselor/student/${studentId}`);
+    revalidatePath(`/counselor/student/${studentId}`);
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -140,7 +140,7 @@ export async function resolveRiskAlertAction(
 
     if (error) throw new Error(error.message);
 
-    revalidatePath(`/${tenantSubdomain}/counselor`);
+    revalidatePath('/counselor');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };

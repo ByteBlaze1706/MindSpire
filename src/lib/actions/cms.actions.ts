@@ -17,7 +17,7 @@ export async function toggleBookmarkResource(tenantSubdomain: string, resourceId
 
   try {
     const isBookmarked = await cmsRepo.toggleBookmark(user.id, resourceId);
-    revalidatePath(`/${tenantSubdomain}/resources`);
+    revalidatePath('/resources');
     return { success: true, isBookmarked };
   } catch (error: any) {
     return { success: false, error: error.message };
