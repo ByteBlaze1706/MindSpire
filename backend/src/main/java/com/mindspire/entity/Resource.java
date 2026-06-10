@@ -51,6 +51,12 @@ public class Resource {
     @Column(name = "media_url")
     private String mediaUrl;
 
+    @Column(name = "youtube_video_id")
+    private String youtubeVideoId;
+
+    @Column(name = "youtube_url")
+    private String youtubeUrl;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 

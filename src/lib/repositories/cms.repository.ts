@@ -15,6 +15,8 @@ export interface ResourceArticle {
   summary?: string;
   media_type?: 'article' | 'video' | 'audio';
   media_url?: string;
+  youtube_video_id?: string;
+  youtube_url?: string;
   created_at: string;
   deleted_at: string | null;
 }

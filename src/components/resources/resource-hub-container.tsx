@@ -146,6 +146,43 @@ export function ResourceHubContainer({
   const [bookmarks, setBookmarks] = useState<ResourceArticle[]>(initialBookmarks);
   const [activeResource, setActiveResource] = useState<ResourceArticle | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [embedError, setEmbedError] = useState(false);
+  const [checkingEmbed, setCheckingEmbed] = useState(false);
+
+  React.useEffect(() => {
+    if (!activeResource) {
+      setEmbedError(false);
+      return;
+    }
+
+    if (activeResource.media_type === 'video' || activeResource.media_type === 'audio') {
+      const videoId = activeResource.youtube_video_id;
+      if (!videoId) {
+        setEmbedError(true);
+        return;
+      }
+
+      setCheckingEmbed(true);
+      setEmbedError(false);
+
+      fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`)
+        .then((res) => {
+          if (res.status === 404 || res.status === 403 || res.status === 401 || res.status === 400) {
+            setEmbedError(true);
+          } else {
+            setEmbedError(false);
+          }
+        })
+        .catch(() => {
+          setEmbedError(false);
+        })
+        .finally(() => {
+          setCheckingEmbed(false);
+        });
+    } else {
+      setEmbedError(false);
+    }
+  }, [activeResource]);
 
   // Set selected category from URL search params on mount
   React.useEffect(() => {
@@ -547,17 +584,68 @@ export function ResourceHubContainer({
             {/* Modal Body */}
             <div className="p-6 overflow-y-auto flex-grow space-y-6">
               {/* YouTube Embed Player for Video & Audio media types */}
-              {(activeResource.media_type === 'video' || activeResource.media_type === 'audio') && activeResource.media_url ? (
-                <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black shadow-inner border border-neutral-100">
-                  <iframe
-                    src={activeResource.media_url}
-                    title={activeResource.title}
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                    className="absolute inset-0 w-full h-full"
-                  />
-                </div>
+              {(activeResource.media_type === 'video' || activeResource.media_type === 'audio') ? (
+                embedError ? (
+                  <div className="p-6 bg-red-50 border border-red-200 rounded-2xl text-center space-y-4 shadow-inner">
+                    <div className="text-red-500 text-3xl">⚠️</div>
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-bold text-red-800">This video cannot be embedded.</h4>
+                      <p className="text-xs text-red-700 max-w-md mx-auto leading-relaxed">
+                        Due to YouTube restriction policies, this video is restricted from playing inside external applications. You can watch it directly on YouTube.
+                      </p>
+                    </div>
+                    <div>
+                      <a
+                        href={activeResource.youtube_url || `https://www.youtube.com/watch?v=${activeResource.youtube_video_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition shadow cursor-pointer"
+                      >
+                        Watch on YouTube ↗
+                      </a>
+                    </div>
+
+                    {/* Related resources grid */}
+                    <div className="pt-6 border-t border-red-200/50 text-left space-y-3">
+                      <h5 className="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                        Related Resources in {activeResource.category}
+                      </h5>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {allResources
+                          .filter((r) => r.category === activeResource.category && r.id !== activeResource.id)
+                          .slice(0, 3)
+                          .map((rel) => (
+                            <button
+                              key={rel.id}
+                              onClick={() => {
+                                setActiveResource(rel);
+                                setEmbedError(false);
+                              }}
+                              className="p-3 bg-white hover:bg-neutral-50 border border-neutral-150 rounded-xl text-left space-y-1.5 transition duration-150 cursor-pointer"
+                            >
+                              <span className="block text-[8px] font-extrabold text-neutral-400 uppercase tracking-widest">
+                                {rel.media_type}
+                              </span>
+                              <h6 className="text-xs font-bold text-neutral-700 line-clamp-2 leading-tight">
+                                {rel.title}
+                              </h6>
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : activeResource.media_url ? (
+                  <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black shadow-inner border border-neutral-100">
+                    <iframe
+                      src={activeResource.media_url}
+                      title={activeResource.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      className="absolute inset-0 w-full h-full"
+                    />
+                  </div>
+                ) : null
               ) : null}
 
               {/* Resource Content Body */}
@@ -591,14 +679,26 @@ export function ResourceHubContainer({
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-neutral-100 flex justify-between items-center bg-neutral-50/50">
-              <button
-                onClick={() => handleToggleBookmark(activeResource.id)}
-                disabled={isPending}
-                className="px-4 py-2 border border-neutral-200 hover:bg-neutral-100 text-neutral-600 rounded-xl text-xs font-semibold transition cursor-pointer"
-              >
-                {bookmarks.some((b) => b.id === activeResource.id) ? '★ Bookmarked' : '☆ Bookmark Resource'}
-              </button>
+            <div className="p-4 border-t border-neutral-100 flex justify-between items-center bg-neutral-50/50 flex-wrap gap-2">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleToggleBookmark(activeResource.id)}
+                  disabled={isPending}
+                  className="px-4 py-2 border border-neutral-200 hover:bg-neutral-100 text-neutral-600 rounded-xl text-xs font-semibold transition cursor-pointer"
+                >
+                  {bookmarks.some((b) => b.id === activeResource.id) ? '★ Bookmarked' : '☆ Bookmark Resource'}
+                </button>
+                {(activeResource.media_type === 'video' || activeResource.media_type === 'audio') && (
+                  <a
+                    href={activeResource.youtube_url || `https://www.youtube.com/watch?v=${activeResource.youtube_video_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 border border-neutral-200 text-neutral-700 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  >
+                    Open on YouTube ↗
+                  </a>
+                )}
+              </div>
               <button
                 onClick={() => setActiveResource(null)}
                 className="px-5 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-semibold transition cursor-pointer"
