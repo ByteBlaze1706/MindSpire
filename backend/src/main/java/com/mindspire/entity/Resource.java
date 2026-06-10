@@ -36,6 +36,21 @@ public class Resource {
     @Column(name = "translations", columnDefinition = "jsonb")
     private String translations;
 
+    @Column(name = "thumbnail_url")
+    private String thumbnailUrl;
+
+    @Column(name = "reading_time")
+    private String readingTime;
+
+    @Column(columnDefinition = "TEXT")
+    private String summary;
+
+    @Column(name = "media_type")
+    private String mediaType; // 'article', 'video', 'audio'
+
+    @Column(name = "media_url")
+    private String mediaUrl;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 

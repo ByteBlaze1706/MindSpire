@@ -38,6 +38,16 @@ public class RunQuery {
             stmt.execute("ALTER TABLE public.users ALTER COLUMN email DROP NOT NULL;");
             System.out.println("Successfully altered users table.");
 
+            System.out.println("Altering resources table to add wellness library columns...");
+            stmt.execute("ALTER TABLE public.resources ADD COLUMN IF NOT EXISTS thumbnail_url VARCHAR(512);");
+            stmt.execute("ALTER TABLE public.resources ADD COLUMN IF NOT EXISTS reading_time VARCHAR(50);");
+            stmt.execute("ALTER TABLE public.resources ADD COLUMN IF NOT EXISTS summary TEXT;");
+            stmt.execute("ALTER TABLE public.resources ADD COLUMN IF NOT EXISTS media_type VARCHAR(50) DEFAULT 'article' CHECK (media_type IN ('article', 'video', 'audio'));");
+            stmt.execute("ALTER TABLE public.resources ADD COLUMN IF NOT EXISTS media_url VARCHAR(512);");
+            stmt.execute("CREATE INDEX IF NOT EXISTS idx_resources_media_type ON public.resources(media_type) WHERE deleted_at IS NULL;");
+            stmt.execute("CREATE INDEX IF NOT EXISTS idx_resources_category ON public.resources(category) WHERE deleted_at IS NULL;");
+            System.out.println("Successfully altered resources table and added indexes.");
+
         } catch (Exception e) {
             e.printStackTrace();
         }

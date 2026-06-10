@@ -10,6 +10,11 @@ export interface ResourceArticle {
   category: string;
   status: string;
   translations: Record<string, any>;
+  thumbnail_url?: string;
+  reading_time?: string;
+  summary?: string;
+  media_type?: 'article' | 'video' | 'audio';
+  media_url?: string;
   created_at: string;
   deleted_at: string | null;
 }

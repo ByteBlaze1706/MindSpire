@@ -264,48 +264,134 @@ export function AssessmentWizard({
         )}
 
         {/* Recommended Next Steps */}
-        <div className="space-y-4">
-          <h4 className="text-sm font-semibold text-neutral-800 tracking-tight">
-            Recommended Wellness Actions
-          </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <a
-              href="/resources"
-              className="p-4 bg-white hover:bg-neutral-50 border border-neutral-100 rounded-2xl flex items-center gap-3 transition shadow-sm text-xs font-semibold text-neutral-700"
-            >
-              <span className="text-lg">📖</span>
-              <span>Explore Self-Help Resource Hub</span>
-            </a>
-            <a
-              href="/journal"
-              className="p-4 bg-white hover:bg-neutral-50 border border-neutral-100 rounded-2xl flex items-center gap-3 transition shadow-sm text-xs font-semibold text-neutral-700"
-            >
-              <span className="text-lg">✍️</span>
-              <span>Write a Journal Reflection Entry</span>
-            </a>
-            <a
-              href="/community"
-              className="p-4 bg-white hover:bg-neutral-50 border border-neutral-100 rounded-2xl flex items-center gap-3 transition shadow-sm text-xs font-semibold text-neutral-700"
-            >
-              <span className="text-lg">🤝</span>
-              <span>Share Anonymously in Community Feed</span>
-            </a>
-            <a
-              href="/playhub"
-              className="p-4 bg-white hover:bg-neutral-50 border border-neutral-100 rounded-2xl flex items-center gap-3 transition shadow-sm text-xs font-semibold text-neutral-700"
-            >
-              <span className="text-lg">🧘</span>
-              <span>Try Emotional Regulating Wellness Tools</span>
-            </a>
-            <a
-              href="/dashboard"
-              className="p-4 bg-white hover:bg-neutral-50 border border-neutral-100 rounded-2xl flex items-center gap-3 transition shadow-sm text-xs font-semibold text-neutral-700"
-            >
-              <span className="text-lg">📅</span>
-              <span>Schedule Counselor Support Session</span>
-            </a>
-          </div>
-        </div>
+        {(() => {
+          const testNameLower = testName.toLowerCase();
+          let resourceCategory = '';
+          if (testNameLower.includes('gad-7')) {
+            resourceCategory = 'Anxiety Management';
+          } else if (testNameLower.includes('phq-9')) {
+            resourceCategory = 'Depression Support';
+          } else if (testNameLower.includes('stress')) {
+            resourceCategory = 'Stress Relief';
+          } else if (testNameLower.includes('burnout')) {
+            resourceCategory = 'Burnout Recovery';
+          } else if (testNameLower.includes('wellness') || testNameLower.includes('wellbeing')) {
+            resourceCategory = 'Mindfulness & Meditation';
+          }
+
+          const resourceLink = resourceCategory
+            ? `/resources?category=${encodeURIComponent(resourceCategory)}`
+            : '/resources';
+
+          const severityLower = resultData.severity.toLowerCase();
+          let journalPrompt = 'Write about your thoughts and feelings today, focusing on self-compassion.';
+          if (severityLower.includes('severe') || severityLower.includes('high')) {
+            journalPrompt = 'Reflect on what feels heaviest today. Write down one tiny thing you can control.';
+          } else if (severityLower.includes('moderate')) {
+            journalPrompt = 'Write about a challenge you faced today. How would you support a friend in this same situation?';
+          } else if (severityLower.includes('mild') || severityLower.includes('minimal') || severityLower.includes('low')) {
+            journalPrompt = 'Write down three things you are grateful for today and how they made you feel.';
+          }
+
+          let communitySuggestion = 'Browse our anonymous Community Feed to read positive stories and connect with peers.';
+          let communityLink = '/community';
+          if (severityLower.includes('severe') || severityLower.includes('high')) {
+            communitySuggestion = 'Explore anonymous support posts in the General Support category.';
+            communityLink = '/community?category=General+Support';
+          } else if (severityLower.includes('moderate')) {
+            communitySuggestion = 'Read motivational stories under the Wellness category.';
+            communityLink = '/community?category=Wellness';
+          } else if (severityLower.includes('mild') || severityLower.includes('minimal') || severityLower.includes('low')) {
+            communitySuggestion = 'Share a brief word of encouragement or self-care tip in the Motivation feed.';
+            communityLink = '/community?category=Motivation';
+          }
+
+          return (
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <h4 className="text-sm font-semibold text-neutral-800 tracking-tight">
+                  Recommended Next Steps
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Matching Resource Link */}
+                  <a
+                    href={resourceLink}
+                    className="p-5 bg-indigo-50/40 hover:bg-indigo-50 border border-indigo-100/50 rounded-2xl flex flex-col justify-between transition shadow-sm group"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">📖</span>
+                        <h5 className="text-xs font-bold text-indigo-900">Curated Wellness Resources</h5>
+                      </div>
+                      <p className="text-[11px] text-indigo-700 leading-relaxed">
+                        Read specialized guides and view videos for <strong>{resourceCategory || 'Mindfulness'}</strong>.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-indigo-600 font-bold mt-3 group-hover:translate-x-1 transition-transform inline-block">
+                      Open Resource Hub &rarr;
+                    </span>
+                  </a>
+
+                  {/* Journal Prompt */}
+                  <a
+                    href={`/journal?prompt=${encodeURIComponent(journalPrompt)}`}
+                    className="p-5 bg-emerald-50/40 hover:bg-emerald-50 border border-emerald-100/50 rounded-2xl flex flex-col justify-between transition shadow-sm group"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">✍️</span>
+                        <h5 className="text-xs font-bold text-emerald-900">Personalized Journal Prompt</h5>
+                      </div>
+                      <p className="text-[11px] text-emerald-700 leading-relaxed italic">
+                        "{journalPrompt}"
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-emerald-600 font-bold mt-3 group-hover:translate-x-1 transition-transform inline-block">
+                      Start Journaling &rarr;
+                    </span>
+                  </a>
+
+                  {/* Community Feed Suggestion */}
+                  <a
+                    href={communityLink}
+                    className="p-5 bg-amber-50/40 hover:bg-amber-50 border border-amber-100/50 rounded-2xl flex flex-col justify-between transition shadow-sm group"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🤝</span>
+                        <h5 className="text-xs font-bold text-amber-900">Community Support</h5>
+                      </div>
+                      <p className="text-[11px] text-amber-700 leading-relaxed">
+                        {communitySuggestion}
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-amber-600 font-bold mt-3 group-hover:translate-x-1 transition-transform inline-block">
+                      View Feed &rarr;
+                    </span>
+                  </a>
+                </div>
+              </div>
+
+              {/* General Actions Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                <a
+                  href="/playhub"
+                  className="p-4 bg-white hover:bg-neutral-50 border border-neutral-100 rounded-2xl flex items-center gap-3 transition shadow-sm text-xs font-semibold text-neutral-700"
+                >
+                  <span className="text-lg">🧘</span>
+                  <span>Try Emotional Regulating Wellness Tools</span>
+                </a>
+                <a
+                  href="/dashboard"
+                  className="p-4 bg-white hover:bg-neutral-50 border border-neutral-100 rounded-2xl flex items-center gap-3 transition shadow-sm text-xs font-semibold text-neutral-700"
+                >
+                  <span className="text-lg">📅</span>
+                  <span>Schedule Counselor Support Session</span>
+                </a>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Reset / Return Button */}
         <div className="pt-4 border-t border-neutral-100 flex justify-end">
