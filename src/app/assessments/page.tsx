@@ -1,19 +1,18 @@
-// src/app/[tenant]/assessments/page.tsx
+// src/app/assessments/page.tsx
 import React from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '../../lib/supabase/server';
 import { AssessmentRepository } from '../../lib/repositories/assessment.repository';
-import { submitAssessmentResult } from '../../lib/actions/assessment.actions';
+import { AssessmentWizard } from '../../components/assessments/assessment-wizard';
 
 const assessRepo = new AssessmentRepository();
 
 export default async function StudentAssessmentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ take?: string }>;
+  searchParams: { take?: string };
 }) {
-  const resolvedSearchParams = await searchParams;
-  const targetTestId = resolvedSearchParams.take || null;
+  const targetTestId = searchParams.take || null;
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -34,30 +33,6 @@ export default async function StudentAssessmentsPage({
     activeTestName = testsList.find((t) => t.id === targetTestId)?.name || '';
   }
 
-  // Server Action invocation handler for Form submission
-  const handleQuizSubmit = async (formData: FormData) => {
-    'use server';
-    if (!targetTestId) return;
-
-    const answersPayload = testQuestions.map((q) => {
-      const valStr = formData.get(`q-${q.id}`) as string;
-      return {
-        questionId: q.id,
-        value: parseInt(valStr || '0', 10),
-      };
-    });
-
-    await submitAssessmentResult(
-      process.env.NEXT_PUBLIC_TENANT_KEY || 'nmims',
-      targetTestId,
-      activeTestName,
-      answersPayload
-    );
-
-    // Redirect to main assessments logs list page upon completion
-    redirect('/assessments');
-  };
-
   return (
     <div className="space-y-8">
       <div>
@@ -70,55 +45,12 @@ export default async function StudentAssessmentsPage({
       </div>
 
       {targetTestId ? (
-        /* Questionnaire taking wizard mode */
-        <div className="p-8 bg-white/70 backdrop-blur-md border border-neutral-100 rounded-3xl space-y-6">
-          <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
-            <h3 className="text-lg font-semibold text-neutral-800 tracking-tight">
-              Taking {activeTestName} Scale
-            </h3>
-            <a
-              href="/assessments"
-              className="text-xs text-neutral-500 hover:text-neutral-700 font-medium"
-            >
-              Cancel
-            </a>
-          </div>
-
-          <form action={handleQuizSubmit} className="space-y-8">
-            {testQuestions.map((q, index) => (
-              <div key={q.id} className="space-y-4">
-                <p className="text-sm font-medium text-neutral-700 leading-relaxed">
-                  {index + 1}. {q.question_text}
-                </p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                  {q.options.map((opt: any) => (
-                    <label
-                      key={opt.value}
-                      className="flex items-center gap-3 p-4 bg-neutral-50 border border-neutral-200/50 rounded-2xl cursor-pointer hover:bg-neutral-100/30 transition"
-                    >
-                      <input
-                        type="radio"
-                        name={`q-${q.id}`}
-                        value={opt.value}
-                        required
-                        className="w-4 h-4 text-neutral-800 focus:ring-neutral-500 cursor-pointer"
-                      />
-                      <span className="text-xs text-neutral-600 font-medium">{opt.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            <button
-              type="submit"
-              className="w-full py-4 bg-neutral-900 hover:bg-neutral-800 text-white rounded-2xl text-sm font-semibold transition cursor-pointer"
-            >
-              Submit Responses
-            </button>
-          </form>
-        </div>
+        <AssessmentWizard
+          questions={testQuestions}
+          testId={targetTestId}
+          testName={activeTestName}
+          tenantSubdomain={process.env.NEXT_PUBLIC_TENANT_KEY || 'nmims'}
+        />
       ) : (
         /* Default List Mode */
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

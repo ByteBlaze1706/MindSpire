@@ -22,10 +22,28 @@ function evaluateGAD7Severity(score: number): string {
   return 'Minimal Anxiety';
 }
 
+function evaluateStressSeverity(score: number): string {
+  if (score >= 13) return 'High Stress';
+  if (score >= 6) return 'Moderate Stress';
+  return 'Low Stress';
+}
+
+function evaluateBurnoutSeverity(score: number): string {
+  if (score >= 13) return 'High Burnout Risk';
+  if (score >= 6) return 'Moderate Burnout Risk';
+  return 'Low Burnout Risk';
+}
+
+function evaluateWellnessSeverity(score: number): string {
+  if (score >= 19) return 'High Wellbeing';
+  if (score >= 10) return 'Moderate Wellbeing';
+  return 'Low Wellbeing';
+}
+
 export async function submitAssessmentResult(
   tenantSubdomain: string,
   typeId: string,
-  typeName: 'PHQ-9' | 'GAD-7' | string,
+  typeName: string,
   answers: { questionId: string; value: number }[]
 ) {
   const supabase = await createClient();
@@ -47,10 +65,37 @@ export async function submitAssessmentResult(
 
   // Calculate score total
   const totalScore = answers.reduce((acc, curr) => acc + curr.value, 0);
-  const severity = typeName === 'PHQ-9' ? evaluatePHQ9Severity(totalScore) : evaluateGAD7Severity(totalScore);
+  
+  let severity = 'Minimal';
+  if (typeName === 'PHQ-9') {
+    severity = evaluatePHQ9Severity(totalScore);
+  } else if (typeName === 'GAD-7') {
+    severity = evaluateGAD7Severity(totalScore);
+  } else if (typeName.includes('Stress')) {
+    severity = evaluateStressSeverity(totalScore);
+  } else if (typeName.includes('Burnout')) {
+    severity = evaluateBurnoutSeverity(totalScore);
+  } else if (typeName.includes('Wellness')) {
+    severity = evaluateWellnessSeverity(totalScore);
+  } else {
+    severity = totalScore >= 10 ? 'Moderate' : 'Mild';
+  }
 
   try {
-    // 1. Save results dynamically in transactional repository flow
+    // Fetch the most recent past result of the same type for comparison (before inserting)
+    const { data: lastResult } = await supabase
+      .from('assessment_results')
+      .select('total_score, severity_level')
+      .eq('user_id', user.id)
+      .eq('assessment_type_id', typeId)
+      .order('completed_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const previousScore = lastResult ? lastResult.total_score : null;
+    const previousSeverity = lastResult ? lastResult.severity_level : null;
+
+    // 2. Save results dynamically in transactional repository flow
     await assessRepo.saveResult(
       {
         institution_id: profile.institution_id,
@@ -65,13 +110,13 @@ export async function submitAssessmentResult(
       }))
     );
 
-    // 2. Clinical safety check - suicidal ideation flag
-    // In PHQ-9, question 9 tracks self-harm. Check if its value > 0
-    const phq9Q9Value = answers.find(
-      (a) => a.questionId === 'b1c2d3e4-9999-9999-9999-999999999999'
-    )?.value || 0;
+    // 3. Clinical safety check - suicidal ideation flag or severe distress
+    const phq9Q9Value = typeName === 'PHQ-9'
+      ? (answers.find((a) => a.questionId === 'b1c2d3e4-9999-9999-9999-999999999999')?.value || 0)
+      : 0;
 
-    const isCritical = phq9Q9Value > 0 || totalScore >= 20;
+    const isCritical = (typeName === 'PHQ-9' && (phq9Q9Value > 0 || totalScore >= 20)) ||
+                       (typeName === 'GAD-7' && totalScore >= 15);
 
     if (isCritical) {
       // Spawn risk alert immediately
@@ -85,7 +130,15 @@ export async function submitAssessmentResult(
     }
 
     revalidatePath('/assessments');
-    return { success: true, severity, totalScore, isCritical };
+    return {
+      success: true,
+      severity,
+      totalScore,
+      isCritical,
+      previousScore,
+      previousSeverity,
+      hasPrevious: lastResult !== null
+    };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
